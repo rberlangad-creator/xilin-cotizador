@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xilin Monterrey - Sistema de Cotización</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Catalog Data -->
+    <script src="products.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar: Editor -->
+        <aside class="sidebar no-print">
+            <h2><i data-lucide="file-text"></i> Editor</h2>
+            
+            <div class="form-group">
+                <label>Tipo de Operación</label>
+                <div class="currency-toggle" id="op-mode">
+                    <span class="active" data-mode="venta">VENTA</span>
+                    <span data-mode="renta">RENTA</span>
+                </div>
+            </div>
+
+            <!-- Folio & Currency Section -->
+            <div class="form-group">
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex: 2;">
+                        <label>Folio de Cotización</label>
+                        <input type="text" id="folio-input" value="COT #0071588" placeholder="COT #0000">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Moneda</label>
+                        <div class="currency-toggle" id="currency-mode">
+                            <span data-curr="MXN">MXN</span>
+                            <span data-curr="USD" class="active">USD</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Cliente / Empresa / Contacto</label>
+                <input type="text" id="client-name" placeholder="Nombre completo">
+                <input type="text" id="client-company" placeholder="Empresa" style="margin-top: 10px;">
+                <input type="text" id="client-rfc" placeholder="RFC" style="margin-top: 10px;">
+                <input type="text" id="client-email" placeholder="Correo electrónico" style="margin-top: 10px;">
+            </div>
+
+            <hr style="margin: 20px 0; opacity: 0.1;">
+
+            <div id="items-editor">
+                <label>Productos</label>
+                <!-- Dynamic Items will be injected here -->
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="addNewItem()" style="flex: 1;">
+                    <i data-lucide="plus"></i> Nuevo
+                </button>
+                <button class="btn" onclick="openCatalog()" style="flex: 1; background: #3b82f6; color: #fff;">
+                    <i data-lucide="search"></i> Catálogo
+                </button>
+            </div>
+
+            <!-- Delivery Time Selector -->
+            <div class="form-group">
+                <label>Tiempo de Entrega</label>
+                <select id="delivery-time-select">
+                    <option value="3-5 días Stock">3-5 días Stock</option>
+                    <option value="10 dias">10 días</option>
+                    <option value="15 dias">15 días</option>
+                    <option value="90 dias">90 días</option>
+                    <option value="120 dias">120 días</option>
+                </select>
+            </div>
+
+            <!-- Custom Conditions Section -->
+            <div class="form-group" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <label style="color: var(--primary);">Condiciones Especiales (3 líneas)</label>
+                <input type="text" class="custom-cond-input" data-index="0" placeholder="Línea 1..." style="margin-bottom: 8px; font-size: 0.8rem;">
+                <input type="text" class="custom-cond-input" data-index="1" placeholder="Línea 2..." style="margin-bottom: 8px; font-size: 0.8rem;">
+                <input type="text" class="custom-cond-input" data-index="2" placeholder="Línea 3..." style="font-size: 0.8rem;">
+            </div>
+
+            <button class="btn btn-primary no-print" id="print-btn" style="margin-top: 30px;">
+                <i data-lucide="printer"></i>
+                Imprimir / Guardar PDF
+            </button>
+
+            <div class="form-group" style="margin-top: 40px;">
+                <label>Historial de Folios</label>
+                <div id="folio-history" style="font-size: 0.8rem; color: var(--muted);">
+                    Sin folios guardados.
+                </div>
+            </div>
+            
+            <button class="btn" style="background: #e2e8f0; color: #444;" onclick="saveToHistory()">
+                <i data-lucide="save"></i> Guardar en Historial
+            </button>
+        </aside>
+
+        <!-- Main Workspace: Paper Preview -->
+        <main class="preview-container" id="printable-area">
+            <header class="header-row">
+                <div class="company-branding">
+                    <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 3rem; line-height: 0.8; color: #000; letter-spacing: -2px;">
+                        xilin
+                    </div>
+                    <div class="company-info" style="margin-top: 15px;">
+                        <strong>Xilin Monterrey</strong><br>
+                        Melchor Ocampo 330, Centro,<br>
+                        64000 Monterrey, N.L.<br>
+                        www.xilinmonterrey.com<br>
+                        Tel. 81-3121-1403
+                    </div>
+                </div>
+
+                <div class="quote-meta">
+                    <div class="quote-title">COTIZACIÓN</div>
+                    <div id="folio-display" style="font-size: 1.1rem; color: var(--muted); margin-bottom: 8px;">COT #0071588</div>
+                    <div id="quote-badges" style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <!-- Dynamic badges will be injected here -->
+                    </div>
+                    <div id="date-display" style="color: var(--muted); font-size: 0.9rem;">Fecha: 02, Abril de 2026</div>
+                </div>
+            </header>
+
+            <section class="bill-to">
+                <h3>Facturar a:</h3>
+                <div id="bill-to-content" style="font-weight: 500; text-transform: uppercase; font-size: 0.9rem;">
+                   <!-- Client info here -->
+                </div>
+            </section>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60%;">ARTICULO/DESCRIPCIÓN</th>
+                        <th style="width: 15%;">PRECIO</th>
+                        <th style="width: 10%;">CANT.</th>
+                        <th style="width: 15%;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="items-list">
+                    <!-- Items here -->
+                </tbody>
+            </table>
+
+            <div class="totals-section" style="overflow: hidden;">
+                <div class="totals">
+                    <div class="total-row">
+                        <span>Sub-total</span>
+                        <span id="subtotal-val">$ 0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Impuestos (16%)</span>
+                        <span id="tax-val">$ 0.00</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>TOTAL</span>
+                        <span id="total-val">$ 0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="conditions" id="conditions-section">
+                <!-- Dynamic conditions here -->
+            </footer>
+
+            <div class="certifications-footer">
+                <div class="certs-label">CERTIFICACIONES DE CALIDAD INTERNACIONAL</div>
+                <div class="certs-container">
+                    <img src="certificaciones.png" alt="Certificaciones Xilin">
+                </div>
+            </div>
+
+            <!-- Legal Footer -->
+            <div class="legal-footer">
+                <strong>AVISO DE CONFIDENCIALIDAD:</strong> Esta información es para uso exclusivo de <strong>Xilin Monterrey</strong> y el cliente receptor. Queda estrictamente prohibida su divulgación, distribución o reproducción total o parcial sin autorización. Este documento contiene información comercial sensible preparada específicamente para sus requerimientos. Para dudas o ejercicio de derechos de privacidad, contactar a: <strong>contacto@xilinmonterrey.com</strong>
+                <span>© 2026 Xilin Monterrey. Todos los Derechos Reservados.</span>
+            </div>
+        </main>
+    </div>
+
+    <!-- Catalog Modal -->
+    <div id="catalog-modal" class="modal-overlay no-print">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Catálogo de Modelos</h3>
+                <button class="close-btn" onclick="closeCatalog()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="catalog-search" placeholder="Buscar modelo (ej. CTD15)..." oninput="filterCatalog(this.value)">
+                <div id="catalog-list" class="catalog-grid">
+                    <!-- Products will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
