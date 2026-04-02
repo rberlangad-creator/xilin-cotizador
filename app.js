@@ -2,7 +2,7 @@
 const CONDITIONS = {
     venta: [
         "PRECIOS COTIZADOS SIN IVA. APLICA IVA DEL 16%.",
-        "LA GARANTÍA DEL EQUIPO CONTRA DEFECTOS DE FABRICA ES DE 12 MESES O 2000 HORAS.",
+        "LA GARANTÍA EN EQUIPO (MONTACARGAS) CONTRA DEFECTOS DE FÁBRICA ES DE 12 MESES O 2000 HORAS.",
         "COTIZACIÓN VÁLIDA POR 15 DÍAS.",
         "LOS EQUIPOS SE PAGAN AL 100% ANTES DE ENTREGARLOS SI EL EQUIPO ESTÁ DISPONIBLE EN STOCK.",
         "EL PRECIO DEL FLETE EN MONTERREY Y ÁREA METROPOLITANA ES SIN COSTO.",
@@ -48,7 +48,7 @@ let state = {
             image: ""
         }
     ],
-    customConditions: ["", "", ""]
+    conditions: [...CONDITIONS.venta]
 };
 
 // --- Initial Render ---
@@ -56,6 +56,7 @@ window.onload = () => {
     updateDate();
     initEventListeners();
     renderItemsEditor();
+    renderConditionsEditor();
     updatePreview();
 };
 
@@ -72,6 +73,11 @@ function initEventListeners() {
             document.querySelector('#op-mode .active').classList.remove('active');
             span.classList.add('active');
             state.mode = span.dataset.mode;
+            
+            // Reload default conditions for the new mode if they change it
+            state.conditions = [...CONDITIONS[state.mode]];
+            renderConditionsEditor();
+            
             renderItemsEditor(); // Re-render editor to show correct prices
             updatePreview();
         };
@@ -90,10 +96,16 @@ function initEventListeners() {
     const bindInput = (id, targetPath) => {
         const el = document.getElementById(id);
         el.oninput = (e) => {
+            const rawVal = e.target.value;
+            // Auto uppercase RFC and Folio
+            const tVal = (id === 'folio-input' || id === 'client-rfc') ? rawVal.toUpperCase() : rawVal;
+            
             if (id === 'folio-input') {
-                state.folio = e.target.value;
+                state.folio = tVal;
+                e.target.value = tVal; // Force input visual update
             } else {
-                state.client[targetPath] = e.target.value;
+                state.client[targetPath] = tVal;
+                if (id === 'client-rfc') e.target.value = tVal;
             }
             updatePreview();
         };
@@ -108,17 +120,27 @@ function initEventListeners() {
     // Delivery Time
     document.getElementById('delivery-time-select').onchange = (e) => {
         state.deliveryTime = e.target.value;
+        
+        // Try to update existing delivery time condition or add it
+        const deliveryIndex = state.conditions.findIndex(c => c.toUpperCase().includes("TIEMPO DE ENTREGA"));
+        if (deliveryIndex !== -1) {
+            state.conditions[deliveryIndex] = `TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`;
+        } else {
+            state.conditions.push(`TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`);
+        }
+        
+        // Try to append China condition if applicable
+        if (state.mode === 'venta' && state.deliveryTime !== '3-5 días Stock') {
+            const chinaMsg = "EQUIPO (MONTACARGAS) A TIEMPO DE ENTREGA SE SOLICITA 50% DE ANTICIPO Y RESTO PREVIO CONFIRMACIÓN DE EMBARQUE EN CHINA.";
+            if(!state.conditions.includes(chinaMsg)) {
+                state.conditions.push(chinaMsg);
+            }
+        }
+        
+        renderConditionsEditor();
         updatePreview();
     };
 
-    // Custom Conditions
-    document.querySelectorAll('.custom-cond-input').forEach(input => {
-        input.oninput = (e) => {
-            const index = parseInt(e.target.dataset.index);
-            state.customConditions[index] = e.target.value;
-            updatePreview();
-        };
-    });
 
     // Print
     document.getElementById('print-btn').onclick = () => window.print();
@@ -259,6 +281,44 @@ function formatCurrency(val) {
     }).format(val);
 }
 
+function renderConditionsEditor() {
+    const container = document.getElementById('conditions-editor');
+    container.innerHTML = '';
+    
+    state.conditions.forEach((cond, index) => {
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.gap = '8px';
+        div.innerHTML = `
+            <textarea style="flex: 1; font-size: 0.75rem; padding: 6px; height: 40px; resize: none;" 
+                      oninput="updateCondition(${index}, this.value)">${cond}</textarea>
+            <button class="btn" style="width: auto; padding: 6px; margin: 0; background: #fee2e2; color: #ef4444;" 
+                    onclick="removeCondition(${index})">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    });
+    lucide.createIcons();
+}
+
+function updateCondition(index, value) {
+    state.conditions[index] = value;
+    updatePreview();
+}
+
+function removeCondition(index) {
+    state.conditions.splice(index, 1);
+    renderConditionsEditor();
+    updatePreview();
+}
+
+function addCondition() {
+    state.conditions.push("");
+    renderConditionsEditor();
+    updatePreview();
+}
+
 function updatePreview() {
     // Header & Badges
     document.getElementById('folio-display').innerText = state.folio || 'COT #000000';
@@ -341,49 +401,58 @@ function updatePreview() {
     document.getElementById('tax-val').innerText = formatCurrency(tax);
     document.getElementById('total-val').innerText = formatCurrency(total);
 
-    // Conditions
+    // Conditions Array 
     const condSection = document.getElementById('conditions-section');
-    const dynamicConditions = [...CONDITIONS[state.mode]];
+    const validConditions = state.conditions.filter(c => c && c.trim().length > 0);
     
-    // Delivery Time Condition
-    const deliveryIndex = dynamicConditions.findIndex(c => c.includes("TIEMPO DE ENTREGA"));
-    if (deliveryIndex !== -1) {
-        dynamicConditions[deliveryIndex] = `TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`;
-    } else {
-        dynamicConditions.push(`TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`);
-    }
-
-    // Special China Payment Condition (only for Sales with lead time)
-    if (state.mode === 'venta' && state.deliveryTime !== '3-5 días Stock') {
-        dynamicConditions.push("SI EL EQUIPO SE VA A TIEMPO DE ENTREGA SE SOLICITA EL 50% DE ANTICIPO Y RESTO PREVIO A EMBARQUE DE PLANTA EN CHINA.");
-    }
-
-    // Custom Conditions
-    state.customConditions.forEach(cond => {
-        if (cond.trim()) {
-            dynamicConditions.push(cond.toUpperCase());
-        }
-    });
-
     condSection.innerHTML = `
         <h4>CONDICIONES COMERCIALES DE ${state.mode.toUpperCase()}:</h4>
         <ul>
-            ${dynamicConditions.map(c => `<li>${c}</li>`).join('')}
+            ${validConditions.map(c => `<li>${c}</li>`).join('')}
         </ul>
     `;
 }
 
 function saveToHistory() {
     const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
+    
+    // Strip image strings to prevent QuotaExceeded on localstorage
+    const safeState = JSON.parse(JSON.stringify(state));
+    safeState.items.forEach(i => i.image = "");
+    
     history.unshift({
         folio: state.folio,
         date: new Date().toLocaleDateString(),
         client: state.client.name,
         total: document.getElementById('total-val').innerText,
-        data: JSON.parse(JSON.stringify(state))
+        data: safeState
     });
     localStorage.setItem('xilin_history', JSON.stringify(history.slice(0, 10)));
     renderHistory();
+}
+
+function resetForm() {
+    if(confirm("¿Seguro que deseas empezar una nueva cotización limpia?")) {
+        state = {
+            mode: 'venta',
+            currency: 'USD',
+            folio: 'COT #',
+            deliveryTime: '90 dias',
+            client: { name: '', company: '', rfc: '', email: '' },
+            items: [],
+            conditions: [...CONDITIONS.venta]
+        };
+        
+        // Reset Inputs
+        document.getElementById('folio-input').value = state.folio;
+        document.getElementById('client-name').value = '';
+        document.getElementById('client-company').value = '';
+        document.getElementById('client-rfc').value = '';
+        document.getElementById('client-email').value = '';
+        
+        renderConditionsEditor();
+        addNewItem();
+    }
 }
 
 function renderHistory() {
@@ -395,11 +464,22 @@ function renderHistory() {
     }
     
     container.innerHTML = history.map((h, i) => `
-        <div style="border-bottom: 1px solid #eee; padding: 10px 0; cursor: pointer;" onclick="loadHistory(${i})">
-            <strong>${h.folio}</strong> - ${h.client || 'S/N'}<br>
-            <span style="font-size: 0.7rem;">${h.date} | ${h.total}</span>
+        <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; align-items: center; justify-content: space-between;">
+            <div style="cursor: pointer; flex: 1;" onclick="loadHistory(${i})">
+                <strong>${h.folio}</strong> - ${h.client || 'S/N'}<br>
+                <span style="font-size: 0.7rem;">${h.date} | ${h.total}</span>
+            </div>
+            <div style="display: flex; gap: 8px; margin-left: 10px;">
+                <button onclick="copyHistory(${i})" title="Copiar con Nuevo Folio" style="background: none; border: none; color: #3b82f6; cursor: pointer; padding: 4px;">
+                    <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button onclick="deleteHistory(${i})" title="Eliminar del Historial" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">
+                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
         </div>
     `).join('');
+    lucide.createIcons();
 }
 
 function loadHistory(index) {
@@ -414,8 +494,49 @@ function loadHistory(index) {
         document.getElementById('client-rfc').value = state.client.rfc;
         document.getElementById('client-email').value = state.client.email;
         
+        renderConditionsEditor();
         renderItemsEditor();
         updatePreview();
+    }
+}
+
+function copyHistory(index) {
+    const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
+    const entry = history[index];
+    if (entry) {
+        state = JSON.parse(JSON.stringify(entry.data));
+        
+        // Auto-increment the folio number if possible
+        let newFolio = state.folio;
+        const match = newFolio.match(/(\d+)$/);
+        if (match) {
+            const nextNum = parseInt(match[1]) + 1;
+            const padded = nextNum.toString().padStart(match[1].length, '0');
+            newFolio = newFolio.replace(/(\d+)$/, padded);
+        } else {
+            newFolio += " (COPIA)";
+        }
+        state.folio = newFolio;
+        
+        // Sync inputs
+        document.getElementById('folio-input').value = state.folio;
+        document.getElementById('client-name').value = state.client.name;
+        document.getElementById('client-company').value = state.client.company;
+        document.getElementById('client-rfc').value = state.client.rfc;
+        document.getElementById('client-email').value = state.client.email;
+        
+        renderConditionsEditor();
+        renderItemsEditor();
+        updatePreview();
+    }
+}
+
+function deleteHistory(index) {
+    if(confirm("¿Seguro que deseas eliminar esta cotización del historial?")) {
+        const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
+        history.splice(index, 1);
+        localStorage.setItem('xilin_history', JSON.stringify(history));
+        renderHistory();
     }
 }
 

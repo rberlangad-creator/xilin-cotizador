@@ -186,7 +186,7 @@ input:focus, textarea:focus {
 }
 
 .items-table td {
-    padding: 20px 15px;
+    padding: 24px 15px;
     border-bottom: 1px solid #eee;
     vertical-align: top;
 }

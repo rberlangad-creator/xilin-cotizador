@@ -77,12 +77,16 @@
                 </select>
             </div>
 
-            <!-- Custom Conditions Section -->
             <div class="form-group" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                <label style="color: var(--primary);">Condiciones Especiales (3 líneas)</label>
-                <input type="text" class="custom-cond-input" data-index="0" placeholder="Línea 1..." style="margin-bottom: 8px; font-size: 0.8rem;">
-                <input type="text" class="custom-cond-input" data-index="1" placeholder="Línea 2..." style="margin-bottom: 8px; font-size: 0.8rem;">
-                <input type="text" class="custom-cond-input" data-index="2" placeholder="Línea 3..." style="font-size: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="color: var(--primary); margin: 0;">Condiciones Comerciales</label>
+                    <button class="btn" style="width: auto; padding: 4px 8px; font-size: 0.7rem; margin: 0; background: #e2e8f0; color: #444;" onclick="addCondition()">
+                        <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Agregar
+                    </button>
+                </div>
+                <div id="conditions-editor" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Dynamic condition inputs -->
+                </div>
             </div>
 
             <button class="btn btn-primary no-print" id="print-btn" style="margin-top: 30px;">
@@ -96,10 +100,14 @@
                     Sin folios guardados.
                 </div>
             </div>
-            
-            <button class="btn" style="background: #e2e8f0; color: #444;" onclick="saveToHistory()">
-                <i data-lucide="save"></i> Guardar en Historial
-            </button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" style="flex: 2; background: #e2e8f0; color: #444;" onclick="saveToHistory()">
+                    <i data-lucide="save"></i> Guardar Historial
+                </button>
+                <button class="btn" style="flex: 1; background: #fee2e2; color: #ef4444;" onclick="resetForm()">
+                    <i data-lucide="rotate-ccw"></i> Nueva
+                </button>
+            </div>
         </aside>
 
         <!-- Main Workspace: Paper Preview -->
