@@ -456,12 +456,44 @@ function resetForm() {
 }
 
 function renderHistory() {
-    const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
-    const container = document.getElementById('folio-history');
+    let history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
+    
+    // Seed initial quotes if history is totally empty (e.g. new Live Github visit)
     if (history.length === 0) {
-        container.innerText = 'Sin folios guardados.';
-        return;
+        history = [
+            {
+                folio: "COT #100-AIR",
+                date: new Date().toLocaleDateString(),
+                client: "AIR THERMAL",
+                total: "$ 87,000.00",
+                data: {
+                    mode: 'venta', currency: 'USD', folio: "COT #100-AIR", deliveryTime: '90 dias',
+                    client: { name: 'AIR THERMAL', company: 'Air Thermal Inc.', rfc: 'AIR001010T3R', email: 'compras@airthermal.com' },
+                    conditions: [...CONDITIONS.venta, "TIEMPO DE ENTREGA: 90 DÍAS.", "EQUIPO (MONTACARGAS) A TIEMPO DE ENTREGA SE SOLICITA 50% DE ANTICIPO Y RESTO PREVIO CONFIRMACIÓN DE EMBARQUE EN CHINA."],
+                    items: [{
+                        id: 1, type: 'forklift', modelTitle: 'OPD15 / OPD15Z (VNA)', description: 'Apilador Trilateral VNA. Horquillas rotativas de 180° para operar en pasillos de solo 1.6m.', highlights: 'Sistema de guía magnética en piso instalada | Navegación de precisión | Capacitación técnica de operador', salePrice: 75000, rentPrice: 0, quantity: 1, discount: 0, mastHeight: '7.5m', forks: '42"', tireType: 'Poly', battery: '48V/500Ah', image: ''
+                    }]
+                }
+            },
+            {
+                folio: "COT #101-MAT",
+                date: new Date().toLocaleDateString(),
+                client: "MATTEL DE MEXICO",
+                total: "$ 32,480.00",
+                data: {
+                    mode: 'venta', currency: 'USD', folio: "COT #101-MAT", deliveryTime: '3-5 días Stock',
+                    client: { name: 'MATTEL DE MEXICO', company: 'Mattel Operations', rfc: 'MAT990101XYZ', email: 'logistica@mattel.com' },
+                    conditions: [...CONDITIONS.venta, "TIEMPO DE ENTREGA: 3-5 DÍAS STOCK."],
+                    items: [{
+                        id: 2, type: 'forklift', modelTitle: 'CPD20SA', description: 'Montacargas de 3 ruedas de alta capacidad. Máximo rendimiento en su clase con estabilidad superior para 2 toneladas.', highlights: 'Llanta antimarcaje especial | Kit de seguridad visual perimetral | Batería Litio', salePrice: 28000, rentPrice: 0, quantity: 1, discount: 0, mastHeight: '4.8m', forks: '42"', tireType: 'Sólida', battery: '48V/560Ah', image: ''
+                    }]
+                }
+            }
+        ];
+        localStorage.setItem('xilin_history', JSON.stringify(history));
     }
+    
+    const container = document.getElementById('folio-history');
     
     container.innerHTML = history.map((h, i) => `
         <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; align-items: center; justify-content: space-between;">
