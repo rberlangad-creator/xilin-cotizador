@@ -99,6 +99,18 @@ const CATALOG = [
 
     // --- Equipos Especializados ---
     {
+        model: "CQDH15C (Single Reach)",
+        description: "Montacargas Electric Fork Reach Truck con pantógrafo (single scissor). Ideal para maniobras en racks de profundidad sencilla. Control AC y dirección electrónica EPS.",
+        specs: "Capacidad: 1,500kg | Batería: 24V/420Ah | Tipo: Reach Pantógrafo Simple",
+        price: 0
+    },
+    {
+        model: "CQDH15C (Double Reach)",
+        description: "Montacargas Electric Fork Reach Truck con pantógrafo (double scissor). Ideal para maniobras en racks de doble profundidad. Control AC y dirección electrónica EPS.",
+        specs: "Capacidad: 1,500kg | Batería: 24V/420Ah | Tipo: Reach Pantógrafo Doble",
+        price: 0
+    },
+    {
         model: "CQDH18C",
         description: "Montacargas Reach Truck para pasillo angosto. Mástil con desplazamiento frontal para optimizar el espacio de estantería.",
         specs: "Capacidad: 1,800kg | Batería: 36V/700Ah | Tipo: Reach",
