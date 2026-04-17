@@ -342,8 +342,8 @@ function updatePreview() {
     `;
 
     // Table
-    const list = document.getElementById('items-list');
-    list.innerHTML = '';
+    const table = document.getElementById('items-table');
+    table.querySelectorAll('.item-tbody').forEach(tb => tb.remove());
     let subtotal = 0;
 
     state.items.forEach(item => {
@@ -353,6 +353,11 @@ function updatePreview() {
         const itemTotal = itemSubtotal - discAmount;
         subtotal += itemTotal;
 
+        const tbody = document.createElement('tbody');
+        tbody.className = 'item-tbody';
+        tbody.style.pageBreakInside = 'avoid';
+        tbody.style.breakInside = 'avoid';
+        
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
@@ -390,7 +395,8 @@ function updatePreview() {
             <td>${item.quantity}</td>
             <td>${formatCurrency(itemTotal)}</td>
         `;
-        list.appendChild(row);
+        tbody.appendChild(row);
+        table.appendChild(tbody);
     });
 
     // Totals
