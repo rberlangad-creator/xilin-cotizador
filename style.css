@@ -125,9 +125,9 @@ input:focus, textarea:focus {
     border-radius: 4px;
     transform: scale(1);
     transition: transform 0.3s ease;
-    width: 210mm; /* A4 width */
+    width: 215.9mm; /* Letter width */
     margin: 0 auto;
-    min-height: 297mm;
+    min-height: 279.4mm; /* Letter height */
     padding: 2.5cm 1.5cm;
     position: relative;
     overflow: hidden;
@@ -499,18 +499,22 @@ input:focus, textarea:focus {
         padding: 0;
     }
     @page {
+        size: letter;
         margin: 1.5cm;
     }
     
     .items-table tr {
         page-break-inside: avoid;
+        break-inside: avoid;
     }
     
     .product-row {
         page-break-inside: avoid;
+        break-inside: avoid;
     }
     
     .totals-section {
         page-break-inside: avoid;
+        break-inside: avoid;
     }
 }
