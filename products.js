@@ -67,6 +67,12 @@ const CATALOG = [
 
     // --- Transpaletas y Apiladores ---
     {
+        model: "CTD15R-EN",
+        description: "Apilador eléctrico Straddle Stacker (Walkie). Patas estabilizadoras (Straddle) ideales para manejo de tarimas perimetrales y logística ajustada.",
+        specs: "Capacidad: 1,500kg | Batería: 24V/105Ah | Tipo: Walkie Straddle",
+        price: 0
+    },
+    {
         model: "CBD18KD",
         description: "Transpaleta eléctrica Walkie ultraligera. Mango ergonómico con controles de fácil acceso, ideal para logística retail.",
         specs: "Capacidad: 1,800kg | Batería: 24V/160Ah | Tipo: Walkie",
