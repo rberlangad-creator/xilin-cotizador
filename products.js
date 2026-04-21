@@ -67,6 +67,12 @@ const CATALOG = [
 
     // --- Transpaletas y Apiladores ---
     {
+        model: "CBD20-WS",
+        description: "Transpaleta eléctrica compacta con batería de Litio. Diseño ultraligero y potente, ideal para maniobras en camiones y almacenes con pasillos estrechos.",
+        specs: "Capacidad: 2,000kg | Batería: Lithium 48V/30Ah | Motor: 1.0kW Brushless",
+        price: 0
+    },
+    {
         model: "CTD15R-EN",
         description: "Apilador eléctrico Straddle Stacker (Walkie). Patas estabilizadoras (Straddle) ideales para manejo de tarimas perimetrales y logística ajustada.",
         specs: "Capacidad: 1,500kg | Batería: 24V/105Ah | Tipo: Walkie Straddle",
