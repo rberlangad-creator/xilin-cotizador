@@ -4,13 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xilin Monterrey - Sistema de Cotización</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <!-- Catalog Data -->
-    <script src="products.js?v=3"></script>
+    <script src="products.js?v=4"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <!-- Access Control Screen -->
+    <div id="login-screen" class="login-overlay">
+        <div class="login-card">
+            <div class="login-logo">xilin</div>
+            <h3 style="margin-bottom: 20px; font-family: 'Outfit', sans-serif;">Acceso al Sistema</h3>
+            <div class="login-form">
+                <input type="text" id="login-user" placeholder="Usuario">
+                <input type="password" id="login-pass" placeholder="Contraseña">
+                <button class="btn btn-primary" onclick="handleLogin()">Entrar</button>
+                <div id="login-error" class="login-error">Credenciales incorrectas</div>
+            </div>
+            <p style="margin-top: 30px; font-size: 0.7rem; color: rgba(255,255,255,0.4);">Xilin Monterrey © 2026</p>
+        </div>
+    </div>
     <div id="app">
         <!-- Sidebar: Editor -->
         <aside class="sidebar no-print">
@@ -207,7 +221,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
     <script>
         lucide.createIcons();
     </script>

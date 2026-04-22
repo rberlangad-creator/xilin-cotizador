@@ -53,12 +53,39 @@ let state = {
 
 // --- Initial Render ---
 window.onload = () => {
+    checkAccess();
     updateDate();
     initEventListeners();
     renderItemsEditor();
     renderConditionsEditor();
     updatePreview();
 };
+
+function checkAccess() {
+    const isLogged = sessionStorage.getItem('xilin_session');
+    if (isLogged) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'grid';
+    }
+}
+
+function handleLogin() {
+    const user = document.getElementById('login-user').value;
+    const pass = document.getElementById('login-pass').value;
+    const errorMsg = document.getElementById('login-error');
+
+    if (user === 'admin' && pass === 'xilin2026') {
+        sessionStorage.setItem('xilin_session', 'true');
+        document.getElementById('login-screen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app').style.display = 'grid';
+            lucide.createIcons();
+        }, 300);
+    } else {
+        errorMsg.style.display = 'block';
+    }
+}
 
 function updateDate() {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
