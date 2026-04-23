@@ -44,7 +44,8 @@ const COMPANIES = {
                 Monterrey, Nuevo León, México.<br>
                 www.bsservices.com.mx | contacto@bsservices.com
             </div>
-        `
+        `,
+        email: "contacto@bsservices.com"
     }
 };
 
@@ -54,7 +55,6 @@ let state = {
     mode: 'venta',
     currency: 'USD',
     folio: 'COT #0071588',
-    deliveryTime: '90 dias',
     client: {
         name: 'JOEL ROBLES',
         company: 'Xilin Monterrey',
@@ -102,10 +102,23 @@ function selectCompany(companyId) {
     
     document.getElementById('company-header').innerHTML = config.headerHtml;
     
+    updateLegalFooter();
     resetForm(false);
     renderHistory();
     updatePreview();
     lucide.createIcons();
+}
+
+function updateLegalFooter() {
+    const config = COMPANIES[state.currentCompany];
+    const footer = document.getElementById('legal-footer-content');
+    if (!footer) return;
+    
+    const names = footer.querySelectorAll('.comp-name');
+    const emails = footer.querySelectorAll('.comp-email');
+    
+    names.forEach(n => n.innerText = config.name);
+    emails.forEach(e => e.innerText = config.email || 'contacto@xilinmonterrey.com');
 }
 
 function handleLogin() {
@@ -177,23 +190,6 @@ function initEventListeners() {
     bindInput('client-company', 'company');
     bindInput('client-rfc', 'rfc');
     bindInput('client-email', 'email');
-
-    document.getElementById('delivery-time-select').onchange = (e) => {
-        state.deliveryTime = e.target.value;
-        const deliveryIndex = state.conditions.findIndex(c => c.toUpperCase().includes("TIEMPO DE ENTREGA"));
-        if (deliveryIndex !== -1) {
-            state.conditions[deliveryIndex] = `TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`;
-        } else {
-            state.conditions.push(`TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`);
-        }
-        
-        if (state.mode === 'venta' && state.deliveryTime !== '3-5 días Stock') {
-            const chinaMsg = "EQUIPO (MONTACARGAS) A TIEMPO DE ENTREGA SE SOLICITA 50% DE ANTICIPO Y RESTO PREVIO CONFIRMACIÓN DE EMBARQUE EN CHINA.";
-            if(!state.conditions.includes(chinaMsg)) state.conditions.push(chinaMsg);
-        }
-        renderConditionsEditor();
-        updatePreview();
-    };
 
     document.getElementById('print-btn').onclick = () => window.print();
 }

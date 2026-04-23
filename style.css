@@ -30,6 +30,12 @@ body {
     line-height: 1.5;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    overflow-x: hidden;
+}
+
+@page {
+    size: letter;
+    margin: 0;
 }
 
 /* --- Dashboard / Editor --- */
@@ -130,12 +136,13 @@ input:focus, textarea:focus {
     border-radius: 4px;
     transform: scale(1);
     transition: transform 0.3s ease;
-    width: 215.9mm; /* Letter width */
-    margin: 0 auto;
-    min-height: 279.4mm; /* Letter height */
-    padding: 2.5cm 1.5cm;
+    width: 215.9mm; /* Exact Letter Width */
+    margin: 40px auto;
+    min-height: 279.4mm; /* Exact Letter Height */
+    padding: 1.5cm;
     position: relative;
     overflow: hidden;
+    border: 1px solid #eee;
 }
 
 .header-row {
@@ -505,7 +512,15 @@ input:focus, textarea:focus {
     }
     @page {
         size: letter;
-        margin: 1.5cm;
+        margin: 5mm 0;
+    }
+    
+    .preview-container {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10mm !important;
+        border: none !important;
+        min-height: 0 !important;
     }
     
     .items-table tr {
