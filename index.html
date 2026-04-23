@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xilin Monterrey - Sistema de Cotización</title>
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
     <!-- Catalog Data -->
-    <script src="products.js?v=8"></script>
+    <script src="products.js?v=9"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -133,6 +133,9 @@
             <button class="btn switch-company-btn" onclick="showSelector()">
                 <i data-lucide="shuffle"></i> Cambiar Empresa
             </button>
+            <button class="btn" style="background: #f8fafc; color: #64748b; font-size: 0.8rem; margin-top: 5px;" onclick="logout()">
+                <i data-lucide="log-out"></i> Cerrar Sesión
+            </button>
         </aside>
 
         <!-- Main Workspace: Paper Preview -->
@@ -223,7 +226,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
     <script>
         lucide.createIcons();
     </script>

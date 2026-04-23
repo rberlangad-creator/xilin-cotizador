@@ -138,6 +138,12 @@ function handleLogin() {
     }
 }
 
+function logout() {
+    sessionStorage.removeItem('xilin_session');
+    sessionStorage.removeItem('current_company');
+    location.reload();
+}
+
 function updateDate() {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     const today = new Date().toLocaleDateString('es-ES', options);
