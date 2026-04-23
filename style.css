@@ -494,7 +494,9 @@ input:focus, textarea:focus {
 /* --- Print Handling --- */
 @media print {
     body {
-        background: none;
+        background: #fff;
+        margin: 0;
+        padding: 0;
     }
     #app {
         margin: 0;
@@ -504,23 +506,20 @@ input:focus, textarea:focus {
     .sidebar, .btn, .no-print {
         display: none !important;
     }
-    .preview-container {
-        box-shadow: none;
-        margin: 0;
-        width: 100%;
-        padding: 0;
-    }
     @page {
         size: letter;
-        margin: 5mm 0;
+        margin: 10mm;
     }
     
     .preview-container {
         width: 100% !important;
+        max-width: 100% !important;
         margin: 0 !important;
-        padding: 10mm !important;
+        padding: 0 !important;
         border: none !important;
-        min-height: 0 !important;
+        box-shadow: none !important;
+        min-height: auto !important;
+        transform: none !important;
     }
     
     .items-table tr {
