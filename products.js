@@ -67,6 +67,24 @@ const CATALOG = [
 
     // --- Transpaletas y Apiladores ---
     {
+        model: "CBD15J-Li3",
+        description: "Transpaleta eléctrica con batería de Litio de 3ra generación. Compacta, ligera y potente con sistema de carga rápida.",
+        specs: "Capacidad: 1,500kg | Batería: Lithium 24V/30Ah | Tipo: Walkie Litio",
+        price: 0
+    },
+    {
+        model: "CBD20J-Li3",
+        description: "Transpaleta eléctrica de alta capacidad con batería de Litio. Ideal para turnos intensivos y carga/descarga de camiones.",
+        specs: "Capacidad: 2,000kg | Batería: Lithium 24V/40Ah | Tipo: Walkie Litio",
+        price: 0
+    },
+    {
+        model: "CDD12J-K",
+        description: "Apilador eléctrico compacto Heli. Excelente maniobrabilidad y visibilidad para pasillos estrechos y estantería de altura media.",
+        specs: "Capacidad: 1,200kg | Batería: 2x12V/100Ah | Tipo: Apilador Walkie",
+        price: 0
+    },
+    {
         model: "CBD20-WS",
         description: "Transpaleta eléctrica compacta con batería de Litio. Diseño ultraligero y potente, ideal para maniobras en camiones y almacenes con pasillos estrechos.",
         specs: "Capacidad: 2,000kg | Batería: Lithium 48V/30Ah | Motor: 1.0kW Brushless",
@@ -106,6 +124,44 @@ const CATALOG = [
         model: "CDDR15",
         description: "Apilador eléctrico tipo Rider. Ofrece confort para el operador en turnos largos y excelente visibilidad panorámica.",
         specs: "Capacidad: 1,500kg | Batería: 24V/280Ah | Tipo: Rider",
+        price: 0
+    },
+
+    // --- Serie Diésel Pesada (UN Forklift) ---
+    {
+        model: "FD80T-NJB3",
+        description: "Montacargas Diésel de servicio pesado Serie N. Chasis reforzado y sistema de enfriamiento de gran tamaño para entornos hostiles.",
+        specs: "Capacidad: 8,000kg | Motor: 6BG1 | Tipo: Diésel Pesada",
+        price: 0
+    },
+    {
+        model: "FD100T-NJB3",
+        description: "Montacargas Diésel de alta capacidad Serie N (10 Ton). Potente sistema de accionamiento para transporte eficiente de gran tonelaje.",
+        specs: "Capacidad: 10,000kg | Motor: 6BG1 | Tipo: Diésel Pesada",
+        price: 0
+    },
+    {
+        model: "FD80T-NGP1",
+        description: "Montacargas Diésel Serie N con motor CA4DF3. Durabilidad estructural excepcional y adaptabilidad en todo tipo de clima.",
+        specs: "Capacidad: 8,000kg | Motor: CA4DF3 | Tipo: Diésel Pesada",
+        price: 0
+    },
+    {
+        model: "FD100T-NGP1",
+        description: "Montacargas Diésel Serie N gran capacidad con motor CA4DF3. Ideal para operaciones en puertos y muelles.",
+        specs: "Capacidad: 10,000kg | Motor: CA4DF3 | Tipo: Diésel Pesada",
+        price: 0
+    },
+    {
+        model: "FD80T-NGR1",
+        description: "Montacargas Diésel Serie N con motor QSF3.8. Máxima eficiencia y confiabilidad con tecnología de motor avanzada.",
+        specs: "Capacidad: 8,000kg | Motor: QSF3.8 | Tipo: Diésel Pesada",
+        price: 0
+    },
+    {
+        model: "FD100T-NGR1",
+        description: "Montacargas Diésel Serie N gran capacidad con motor QSF3.8. Diseñado para cargas pesadas continuas.",
+        specs: "Capacidad: 10,000kg | Motor: QSF3.8 | Tipo: Diésel Pesada",
         price: 0
     },
 
