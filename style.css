@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap');
 
 :root {
-    --primary: #f82b2b; /* Xilin Red-ish */
+    --primary: #f82b2b; /* Default Xilin */
     --accent: #2b2b2b;
     --background: #fdfdfd;
     --text: #1a1a1a;
@@ -10,6 +10,11 @@
     --glass: rgba(255, 255, 255, 0.8);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --premium-glow: 0 0 20px rgba(248, 43, 43, 0.1);
+}
+
+body.theme-bsservices {
+    --primary: #1e3a8a; /* BS Services Blue */
+    --premium-glow: 0 0 20px rgba(30, 58, 138, 0.1);
 }
 
 * {
@@ -577,9 +582,73 @@ input:focus, textarea:focus {
     border-color: var(--primary);
 }
 
-.login-error {
-    color: #fca5a5;
-    font-size: 0.85rem;
-    margin-top: 10px;
+/* --- Company Selector --- */
+.selector-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #f0f2f5;
+    z-index: 9998;
     display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.selector-grid {
+    display: flex;
+    gap: 40px;
+    max-width: 900px;
+    width: 100%;
+}
+
+.company-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 30px;
+    padding: 50px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.company-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+.company-card img {
+    max-width: 200px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 30px;
+}
+
+.company-card h2 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.company-card p {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.company-card.xilin:hover { border-color: #f82b2b; }
+.company-card.bss:hover { border-color: #1e3a8a; }
+
+.switch-company-btn {
+    background: #f1f5f9;
+    color: #475569;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
 }

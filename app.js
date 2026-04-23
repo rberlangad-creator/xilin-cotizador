@@ -19,10 +19,40 @@ const CONDITIONS = {
     ]
 };
 
+const COMPANIES = {
+    xilin: {
+        name: "Xilin Monterrey",
+        theme: "theme-xilin",
+        historyKey: "xilin_history",
+        headerHtml: `
+            <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 3rem; line-height: 0.8; color: #000; letter-spacing: -2px;">xilin</div>
+            <div class="company-info" style="margin-top: 15px;">
+                <strong>Xilin Monterrey</strong><br>
+                Melchor Ocampo 330, Centro, 64000 Monterrey, N.L.<br>
+                www.xilinmonterrey.com | Tel. 81-3121-1403
+            </div>
+        `
+    },
+    bsservices: {
+        name: "BS Services",
+        theme: "theme-bsservices",
+        historyKey: "bsservices_history",
+        headerHtml: `
+            <img src="bsservices_logo.png" style="width: 220px; margin-bottom: 5px;" onerror="this.src='https://via.placeholder.com/220x60?text=BS+Services'">
+            <div class="company-info">
+                <strong>BS Services - Consultoría Industrial</strong><br>
+                Monterrey, Nuevo León, México.<br>
+                www.bsservices.com.mx | contacto@bsservices.com
+            </div>
+        `
+    }
+};
+
 // --- State ---
 let state = {
-    mode: 'venta', // 'venta' or 'renta'
-    currency: 'USD', // Initialized in USD to match the image
+    currentCompany: null,
+    mode: 'venta',
+    currency: 'USD',
     folio: 'COT #0071588',
     deliveryTime: '90 dias',
     client: {
@@ -31,23 +61,7 @@ let state = {
         rfc: 'XAX010101000',
         email: 'test@example.com'
     },
-    items: [
-        {
-            id: Date.now(),
-            modelTitle: "EQUIPO XILIN",
-            description: "Descripción general del equipo.",
-            highlights: "Eficiencia superior | Bajo mantenimiento | Diseño ergonómico",
-            salePrice: 0,
-            rentPrice: 0,
-            quantity: 1,
-            discount: 0,
-            mastHeight: '4.5m',
-            forks: '42"',
-            tireType: 'Sólida',
-            battery: 'Lead-Acid / Lithium',
-            image: ""
-        }
-    ],
+    items: [],
     conditions: [...CONDITIONS.venta]
 };
 
@@ -56,17 +70,42 @@ window.onload = () => {
     checkAccess();
     updateDate();
     initEventListeners();
-    renderItemsEditor();
-    renderConditionsEditor();
-    updatePreview();
 };
 
 function checkAccess() {
     const isLogged = sessionStorage.getItem('xilin_session');
+    const savedCompany = sessionStorage.getItem('current_company');
+    
     if (isLogged) {
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app').style.display = 'grid';
+        if (savedCompany) {
+            selectCompany(savedCompany);
+        } else {
+            showSelector();
+        }
     }
+}
+
+function showSelector() {
+    document.getElementById('company-selector').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+}
+
+function selectCompany(companyId) {
+    state.currentCompany = companyId;
+    sessionStorage.setItem('current_company', companyId);
+    
+    const config = COMPANIES[companyId];
+    document.body.className = config.theme;
+    document.getElementById('company-selector').style.display = 'none';
+    document.getElementById('app').style.display = 'grid';
+    
+    document.getElementById('company-header').innerHTML = config.headerHtml;
+    
+    resetForm(false);
+    renderHistory();
+    updatePreview();
+    lucide.createIcons();
 }
 
 function handleLogin() {
@@ -79,8 +118,7 @@ function handleLogin() {
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app').style.display = 'grid';
-            lucide.createIcons();
+            showSelector();
         }, 300);
     } else {
         errorMsg.style.display = 'block';
@@ -100,12 +138,9 @@ function initEventListeners() {
             document.querySelector('#op-mode .active').classList.remove('active');
             span.classList.add('active');
             state.mode = span.dataset.mode;
-            
-            // Reload default conditions for the new mode if they change it
             state.conditions = [...CONDITIONS[state.mode]];
             renderConditionsEditor();
-            
-            renderItemsEditor(); // Re-render editor to show correct prices
+            renderItemsEditor();
             updatePreview();
         };
     });
@@ -124,12 +159,11 @@ function initEventListeners() {
         const el = document.getElementById(id);
         el.oninput = (e) => {
             const rawVal = e.target.value;
-            // Auto uppercase RFC and Folio
             const tVal = (id === 'folio-input' || id === 'client-rfc') ? rawVal.toUpperCase() : rawVal;
             
             if (id === 'folio-input') {
                 state.folio = tVal;
-                e.target.value = tVal; // Force input visual update
+                e.target.value = tVal;
             } else {
                 state.client[targetPath] = tVal;
                 if (id === 'client-rfc') e.target.value = tVal;
@@ -144,11 +178,8 @@ function initEventListeners() {
     bindInput('client-rfc', 'rfc');
     bindInput('client-email', 'email');
 
-    // Delivery Time
     document.getElementById('delivery-time-select').onchange = (e) => {
         state.deliveryTime = e.target.value;
-        
-        // Try to update existing delivery time condition or add it
         const deliveryIndex = state.conditions.findIndex(c => c.toUpperCase().includes("TIEMPO DE ENTREGA"));
         if (deliveryIndex !== -1) {
             state.conditions[deliveryIndex] = `TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`;
@@ -156,20 +187,14 @@ function initEventListeners() {
             state.conditions.push(`TIEMPO DE ENTREGA: ${state.deliveryTime.toUpperCase()}.`);
         }
         
-        // Try to append China condition if applicable
         if (state.mode === 'venta' && state.deliveryTime !== '3-5 días Stock') {
             const chinaMsg = "EQUIPO (MONTACARGAS) A TIEMPO DE ENTREGA SE SOLICITA 50% DE ANTICIPO Y RESTO PREVIO CONFIRMACIÓN DE EMBARQUE EN CHINA.";
-            if(!state.conditions.includes(chinaMsg)) {
-                state.conditions.push(chinaMsg);
-            }
+            if(!state.conditions.includes(chinaMsg)) state.conditions.push(chinaMsg);
         }
-        
         renderConditionsEditor();
         updatePreview();
     };
 
-
-    // Print
     document.getElementById('print-btn').onclick = () => window.print();
 }
 
@@ -204,65 +229,53 @@ function renderItemsEditor() {
     const container = document.getElementById('items-editor');
     container.innerHTML = '<label>Productos / Items</label>';
     
-    state.items.forEach((item, index) => {
+    state.items.forEach((item) => {
         const price = state.mode === 'venta' ? (item.salePrice || 0) : (item.rentPrice || 0);
         const div = document.createElement('div');
         div.className = 'item-edit-row';
         div.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 8px;">
-                <input type="text" placeholder="Modelo (Ej: FB16R)" value="${item.modelTitle || ''}" oninput="updateItem(${item.id}, 'modelTitle', this.value)" style="font-weight: 700;">
-                <input type="text" placeholder="Descripción breve..." value="${item.description || ''}" oninput="updateItem(${item.id}, 'description', this.value)">
+                <input type="text" placeholder="Modelo" value="${item.modelTitle || ''}" oninput="updateItem(${item.id}, 'modelTitle', this.value)" style="font-weight: 700;">
+                <input type="text" placeholder="Descripción..." value="${item.description || ''}" oninput="updateItem(${item.id}, 'description', this.value)">
             </div>
             
-            <textarea placeholder="Comentarios Profesionales / Plus (Sugerencia: use | para separar)" 
-                      style="font-size: 0.8rem; height: 60px;"
-                      oninput="updateItem(${item.id}, 'highlights', this.value)">${item.highlights || ''}</textarea>
+            <textarea placeholder="Características..." style="font-size: 0.8rem; height: 60px;" oninput="updateItem(${item.id}, 'highlights', this.value)">${item.highlights || ''}</textarea>
 
             ${item.type === 'generic' ? `
                 <div class="form-group" style="margin-top: 10px;">
-                    <label style="font-size: 0.65rem;">Unidad de Medida / Adicional</label>
-                    <input type="text" placeholder="Ej: 1 Pieza, Servicio, Lote, Hrs..." value="${item.unit || ''}" oninput="updateItem(${item.id}, 'unit', this.value)">
+                    <label style="font-size: 0.65rem;">Unidad</label>
+                    <input type="text" value="${item.unit || ''}" oninput="updateItem(${item.id}, 'unit', this.value)">
                 </div>
             ` : `
                 <div class="item-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
-                    <div>
-                        <label style="font-size: 0.65rem;">Altura (m)</label>
-                        <input type="text" placeholder="Ej: 4.5m" value="${item.mastHeight || ''}" oninput="updateItem(${item.id}, 'mastHeight', this.value)">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.65rem;">Cuchillas</label>
-                        <input type="text" placeholder='Ej: 42"' value="${item.forks || ''}" oninput="updateItem(${item.id}, 'forks', this.value)">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.65rem;">Ruedas</label>
-                        <select onchange="updateItem(${item.id}, 'tireType', this.value)" style="padding: 10px 5px; font-size: 0.8rem;">
+                    <div><label style="font-size: 0.65rem;">Mástil</label><input type="text" value="${item.mastHeight || ''}" oninput="updateItem(${item.id}, 'mastHeight', this.value)"></div>
+                    <div><label style="font-size: 0.65rem;">Cuchillas</label><input type="text" value="${item.forks || ''}" oninput="updateItem(${item.id}, 'forks', this.value)"></div>
+                    <div><label style="font-size: 0.65rem;">Ruedas</label>
+                        <select onchange="updateItem(${item.id}, 'tireType', this.value)">
                             <option value="Sólida" ${item.tireType === 'Sólida' ? 'selected' : ''}>Sólida</option>
                             <option value="Rudomática" ${item.tireType === 'Rudomática' ? 'selected' : ''}>Rudomática</option>
                             <option value="Poly" ${item.tireType === 'Poly' ? 'selected' : ''}>Poly</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="form-group" style="margin-top: 10px;">
-                    <label style="font-size: 0.65rem;">Capacidad de Batería</label>
-                    <input type="text" placeholder="Ej: 48V/270AH Litio" value="${item.battery || ''}" oninput="updateItem(${item.id}, 'battery', this.value)">
+                    <label style="font-size: 0.65rem;">Batería</label>
+                    <input type="text" value="${item.battery || ''}" oninput="updateItem(${item.id}, 'battery', this.value)">
                 </div>
             `}
 
-            <div class="item-grid" style="margin-top: 10px;">
-                <input type="number" placeholder="Precio ($)" value="${price}" oninput="updateItem(${item.id}, 'price', this.value)">
+            <div class="item-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
+                <input type="number" placeholder="Precio" value="${price}" oninput="updateItem(${item.id}, 'price', this.value)">
                 <input type="number" placeholder="Cant" value="${item.quantity}" oninput="updateItem(${item.id}, 'quantity', this.value)">
-                <input type="number" placeholder="Desc (%)" value="${item.discount}" oninput="updateItem(${item.id}, 'discount', this.value)">
+                <input type="number" placeholder="Desc %" value="${item.discount}" oninput="updateItem(${item.id}, 'discount', this.value)">
             </div>
             
-            <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
-                <label class="btn" style="flex: 1; font-size: 0.7rem; background: #f1f5f9; color: #475569; padding: 8px;">
-                    <i data-lucide="image"></i> Subir Imagen
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                <label class="btn" style="flex: 1; font-size: 0.7rem; background: #f1f5f9; cursor: pointer;">
+                    <i data-lucide="image"></i> Imagen
                     <input type="file" style="display: none;" accept="image/*" onchange="handleImageUpload(${item.id}, this.files[0])">
                 </label>
-                <button class="btn" style="width: auto; padding: 8px; background: #fee2e2; color: #ef4444;" onclick="removeItem(${item.id})">
-                   <i data-lucide="trash-2"></i>
-                </button>
+                <button class="btn" style="width: auto; background: #fee2e2; color: #ef4444;" onclick="removeItem(${item.id})"><i data-lucide="trash-2"></i></button>
             </div>
         `;
         container.appendChild(div);
@@ -273,7 +286,6 @@ function renderItemsEditor() {
 function updateItem(id, field, value) {
     const item = state.items.find(i => i.id === id);
     if (!item) return;
-    
     if (field === 'price') {
         const val = parseFloat(value) || 0;
         if (state.mode === 'venta') item.salePrice = val;
@@ -288,384 +300,179 @@ function updateItem(id, field, value) {
 
 function handleImageUpload(id, file) {
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = (e) => {
         const item = state.items.find(i => i.id === id);
         if (item) {
-            item.image = e.target.result; // Base64 string
+            item.image = e.target.result;
             updatePreview();
-            renderItemsEditor(); // Re-render to show updated state (optional)
         }
     };
     reader.readAsDataURL(file);
 }
 
 function formatCurrency(val) {
-    return new Intl.NumberFormat('es-MX', {
-        style: 'currency',
-        currency: state.currency,
-    }).format(val);
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: state.currency }).format(val);
 }
 
 function renderConditionsEditor() {
     const container = document.getElementById('conditions-editor');
     container.innerHTML = '';
-    
     state.conditions.forEach((cond, index) => {
         const div = document.createElement('div');
-        div.style.display = 'flex';
-        div.style.gap = '8px';
+        div.style.display = 'flex'; div.style.gap = '8px';
         div.innerHTML = `
-            <textarea style="flex: 1; font-size: 0.75rem; padding: 6px; height: 40px; resize: none;" 
-                      oninput="updateCondition(${index}, this.value)">${cond}</textarea>
-            <button class="btn" style="width: auto; padding: 6px; margin: 0; background: #fee2e2; color: #ef4444;" 
-                    onclick="removeCondition(${index})">
-                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-            </button>
+            <textarea style="flex: 1; font-size: 0.75rem; height: 40px;" oninput="updateCondition(${index}, this.value)">${cond}</textarea>
+            <button class="btn" style="width: auto; background: #fee2e2; color: #ef4444;" onclick="removeCondition(${index})"><i data-lucide="trash-2"></i></button>
         `;
         container.appendChild(div);
     });
     lucide.createIcons();
 }
 
-function updateCondition(index, value) {
-    state.conditions[index] = value;
-    updatePreview();
-}
-
-function removeCondition(index) {
-    state.conditions.splice(index, 1);
-    renderConditionsEditor();
-    updatePreview();
-}
-
-function addCondition() {
-    state.conditions.push("");
-    renderConditionsEditor();
-    updatePreview();
-}
+function updateCondition(index, value) { state.conditions[index] = value; updatePreview(); }
+function removeCondition(index) { state.conditions.splice(index, 1); renderConditionsEditor(); updatePreview(); }
+function addCondition() { state.conditions.push(""); renderConditionsEditor(); updatePreview(); }
 
 function updatePreview() {
-    // Header & Badges
     document.getElementById('folio-display').innerText = state.folio || 'COT #000000';
-    
     const badges = document.getElementById('quote-badges');
-    const modeText = state.mode === 'venta' ? 'VENTA' : 'RENTA';
-    const currText = state.currency === 'MXN' ? 'MXN PESOS' : 'USD DÓLARES AMERICANOS';
+    badges.innerHTML = `<span class="badge badge-mode">${state.mode.toUpperCase()}</span><span class="badge badge-curr">${state.currency}</span>`;
     
-    badges.innerHTML = `
-        <span class="badge badge-mode">${modeText}</span>
-        <span class="badge badge-curr">${currText}</span>
-    `;
-    
-    // Client
-    const billTo = document.getElementById('bill-to-content');
-    billTo.innerHTML = `
+    document.getElementById('bill-to-content').innerHTML = `
         <strong>${state.client.name || 'CLIENTE PENDIENTE'}</strong><br>
         ${state.client.company || 'Empresa'}<br>
         RFC: ${state.client.rfc || 'XAX010101000'}<br>
-        <span style="color: #3b82f6; text-transform: lowercase;">${state.client.email || 'correo@ejemplo.com'}</span>
+        <span style="color: #3b82f6; text-transform: lowercase;">${state.client.email || ''}</span>
     `;
 
-    // Table
     const table = document.getElementById('items-table');
     table.querySelectorAll('.item-tbody').forEach(tb => tb.remove());
     let subtotal = 0;
 
     state.items.forEach(item => {
         const price = state.mode === 'venta' ? (item.salePrice || 0) : (item.rentPrice || 0);
-        const itemSubtotal = price * item.quantity;
-        const discAmount = itemSubtotal * (item.discount / 100);
-        const itemTotal = itemSubtotal - discAmount;
+        const itemTotal = (price * item.quantity) * (1 - (item.discount / 100));
         subtotal += itemTotal;
 
         const tbody = document.createElement('tbody');
         tbody.className = 'item-tbody';
-        tbody.style.pageBreakInside = 'avoid';
-        tbody.style.breakInside = 'avoid';
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <div class="product-row" style="display: flex; gap: 15px;">
-                    <img src="${item.image || 'https://via.placeholder.com/80?text=No+Img'}" 
-                         style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; border: 1px solid #eee;">
-                    <div class="product-desc" style="flex: 1;">
-                        <strong style="display: block; margin-bottom: 4px; font-size: 0.95rem; text-transform: uppercase; color: #000;">${item.modelTitle || 'EQUIPO XILIN'}</strong>
-                        <div style="font-size: 0.8rem; color: #444; margin-bottom: 8px; line-height: 1.3;">${item.description || ''}</div>
-                        
-                        ${item.highlights ? `
-                        <div style="margin-bottom: 10px; padding: 5px 0;">
-                            <div style="font-size: 0.8rem; color: #1e293b; font-weight: 500;">
-                                <ul style="margin: 0; padding-left: 15px; display: flex; flex-direction: column; gap: 4px;">
-                                    ${item.highlights.split('|').map(h => `<li>${h.trim()}</li>`).join('')}
-                                </ul>
+        tbody.innerHTML = `
+            <tr>
+                <td>
+                    <div class="product-row" style="display: flex; gap: 15px;">
+                        <img src="${item.image || 'https://via.placeholder.com/80?text=No+Img'}" style="width: 80px; height: 80px; object-fit: contain;">
+                        <div class="product-desc" style="flex: 1;">
+                            <strong style="display: block; font-size: 0.95rem; text-transform: uppercase;">${item.modelTitle || 'EQUIPO'}</strong>
+                            <div style="font-size: 0.8rem; color: #444; margin-bottom: 5px;">${item.description || ''}</div>
+                            ${item.highlights ? `<ul style="font-size: 0.75rem; color: #1e293b; padding-left: 15px;">${item.highlights.split('|').map(h => `<li>${h.trim()}</li>`).join('')}</ul>` : ''}
+                            <div style="font-size: 0.7rem; color: #64748b; border-top: 1px solid #f1f1f1; padding-top: 5px; margin-top: 5px;">
+                                ${item.type === 'generic' ? `Info: ${item.unit || '-'}` : `Mástil: ${item.mastHeight} | Horquillas: ${item.forks} | Ruedas: ${item.tireType} | Batería: ${item.battery}`}
                             </div>
                         </div>
-                        ` : ''}
-
-                        ${item.type === 'generic' ? `
-                            ${item.unit ? `<div style="font-size: 0.72rem; color: #64748b; padding-top: 5px; border-top: 1px solid #f1f1f1;"><strong>Info:</strong> ${item.unit}</div>` : ''}
-                        ` : `
-                        <div style="font-size: 0.72rem; color: #64748b; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding-top: 5px; border-top: 1px solid #f1f1f1;">
-                            <span><strong>Mástil:</strong> ${item.mastHeight || '-'}</span>
-                            <span><strong>Horquillas:</strong> ${item.forks || '-'}</span>
-                            <span><strong>Ruedas:</strong> ${item.tireType || '-'}</span>
-                            <span><strong>Batería:</strong> ${item.battery || '-'}</span>
-                        </div>
-                        `}
                     </div>
-                </div>
-            </td>
-            <td>${formatCurrency(price)}</td>
-            <td>${item.quantity}</td>
-            <td>${formatCurrency(itemTotal)}</td>
+                </td>
+                <td>${formatCurrency(price)}</td>
+                <td>${item.quantity}</td>
+                <td>${formatCurrency(itemTotal)}</td>
+            </tr>
         `;
-        tbody.appendChild(row);
         table.appendChild(tbody);
     });
 
-    // Totals
     const tax = subtotal * 0.16;
-    const total = subtotal + tax;
-
     document.getElementById('subtotal-val').innerText = formatCurrency(subtotal);
     document.getElementById('tax-val').innerText = formatCurrency(tax);
-    document.getElementById('total-val').innerText = formatCurrency(total);
+    document.getElementById('total-val').innerText = formatCurrency(subtotal + tax);
 
-    // Conditions Array 
     const condSection = document.getElementById('conditions-section');
-    const validConditions = state.conditions.filter(c => c && c.trim().length > 0);
-    
     condSection.innerHTML = `
         <h4>CONDICIONES COMERCIALES DE ${state.mode.toUpperCase()}:</h4>
-        <ul>
-            ${validConditions.map(c => `<li>${c}</li>`).join('')}
-        </ul>
+        <ul>${state.conditions.filter(c => c).map(c => `<li>${c}</li>`).join('')}</ul>
     `;
 }
 
 function saveToHistory() {
-    const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
-    
-    // Strip image strings to prevent QuotaExceeded on localstorage
+    const config = COMPANIES[state.currentCompany];
+    const history = JSON.parse(localStorage.getItem(config.historyKey) || '[]');
     const safeState = JSON.parse(JSON.stringify(state));
     safeState.items.forEach(i => i.image = "");
-    
-    history.unshift({
-        folio: state.folio,
-        date: new Date().toLocaleDateString(),
-        client: state.client.name,
-        total: document.getElementById('total-val').innerText,
-        data: safeState
-    });
-    localStorage.setItem('xilin_history', JSON.stringify(history.slice(0, 10)));
+    history.unshift({ folio: state.folio, date: new Date().toLocaleDateString(), client: state.client.name, total: document.getElementById('total-val').innerText, data: safeState });
+    localStorage.setItem(config.historyKey, JSON.stringify(history.slice(0, 15)));
     renderHistory();
 }
 
-function resetForm() {
-    if(confirm("¿Seguro que deseas empezar una nueva cotización limpia?")) {
-        state = {
-            mode: 'venta',
-            currency: 'USD',
-            folio: 'COT #',
-            deliveryTime: '90 dias',
-            client: { name: '', company: '', rfc: '', email: '' },
-            items: [],
-            conditions: [...CONDITIONS.venta]
-        };
-        
-        // Reset Inputs
+function resetForm(ask = true) {
+    if (!ask || confirm("¿Borrar cotización actual?")) {
+        state.items = [];
+        state.client = { name: '', company: '', rfc: '', email: '' };
+        state.folio = 'COT #';
+        state.conditions = [...CONDITIONS[state.mode]];
         document.getElementById('folio-input').value = state.folio;
-        document.getElementById('client-name').value = '';
-        document.getElementById('client-company').value = '';
-        document.getElementById('client-rfc').value = '';
-        document.getElementById('client-email').value = '';
-        
-        renderConditionsEditor();
-        addNewItem();
+        renderConditionsEditor(); renderItemsEditor(); updatePreview();
     }
 }
 
 function renderHistory() {
-    let history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
-    
-    // Seed initial quotes if history is totally empty (e.g. new Live Github visit)
-    if (history.length === 0) {
-        history = [
-            {
-                folio: "COT #100-AIR",
-                date: new Date().toLocaleDateString(),
-                client: "AIR THERMAL",
-                total: "$ 87,000.00",
-                data: {
-                    mode: 'venta', currency: 'USD', folio: "COT #100-AIR", deliveryTime: '90 dias',
-                    client: { name: 'AIR THERMAL', company: 'Air Thermal Inc.', rfc: 'AIR001010T3R', email: 'compras@airthermal.com' },
-                    conditions: [...CONDITIONS.venta, "TIEMPO DE ENTREGA: 90 DÍAS.", "EQUIPO (MONTACARGAS) A TIEMPO DE ENTREGA SE SOLICITA 50% DE ANTICIPO Y RESTO PREVIO CONFIRMACIÓN DE EMBARQUE EN CHINA."],
-                    items: [{
-                        id: 1, type: 'forklift', modelTitle: 'OPD15 / OPD15Z (VNA)', description: 'Apilador Trilateral VNA. Horquillas rotativas de 180° para operar en pasillos de solo 1.6m.', highlights: 'Sistema de guía magnética en piso instalada | Navegación de precisión | Capacitación técnica de operador', salePrice: 75000, rentPrice: 0, quantity: 1, discount: 0, mastHeight: '7.5m', forks: '42"', tireType: 'Poly', battery: '48V/500Ah', image: ''
-                    }]
-                }
-            },
-            {
-                folio: "COT #101-MAT",
-                date: new Date().toLocaleDateString(),
-                client: "MATTEL DE MEXICO",
-                total: "$ 32,480.00",
-                data: {
-                    mode: 'venta', currency: 'USD', folio: "COT #101-MAT", deliveryTime: '3-5 días Stock',
-                    client: { name: 'MATTEL DE MEXICO', company: 'Mattel Operations', rfc: 'MAT990101XYZ', email: 'logistica@mattel.com' },
-                    conditions: [...CONDITIONS.venta, "TIEMPO DE ENTREGA: 3-5 DÍAS STOCK."],
-                    items: [{
-                        id: 2, type: 'forklift', modelTitle: 'CPD20SA', description: 'Montacargas de 3 ruedas de alta capacidad. Máximo rendimiento en su clase con estabilidad superior para 2 toneladas.', highlights: 'Llanta antimarcaje especial | Kit de seguridad visual perimetral | Batería Litio', salePrice: 28000, rentPrice: 0, quantity: 1, discount: 0, mastHeight: '4.8m', forks: '42"', tireType: 'Sólida', battery: '48V/560Ah', image: ''
-                    }]
-                }
-            }
-        ];
-        localStorage.setItem('xilin_history', JSON.stringify(history));
-    }
-    
+    const key = COMPANIES[state.currentCompany].historyKey;
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
     const container = document.getElementById('folio-history');
-    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="padding: 10px; font-style: italic;">Sin historial.</p>';
+        return;
+    }
     container.innerHTML = history.map((h, i) => `
-        <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; align-items: center; justify-content: space-between;">
-            <div style="cursor: pointer; flex: 1;" onclick="loadHistory(${i})">
-                <strong>${h.folio}</strong> - ${h.client || 'S/N'}<br>
-                <span style="font-size: 0.7rem;">${h.date} | ${h.total}</span>
-            </div>
-            <div style="display: flex; gap: 8px; margin-left: 10px;">
-                <button onclick="copyHistory(${i})" title="Copiar con Nuevo Folio" style="background: none; border: none; color: #3b82f6; cursor: pointer; padding: 4px;">
-                    <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
-                </button>
-                <button onclick="deleteHistory(${i})" title="Eliminar del Historial" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">
-                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                </button>
+        <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between;">
+            <div style="cursor: pointer;" onclick="loadHistory(${i})"><strong>${h.folio}</strong><br><span style="font-size: 0.7rem;">${h.client} | ${h.total}</span></div>
+            <div style="display: flex; gap: 5px;">
+                <button onclick="copyHistory(${i})" style="background:none;border:none;color:#3b82f6;"><i data-lucide="copy" style="width:14px;"></i></button>
+                <button onclick="deleteHistory(${i})" style="background:none;border:none;color:#ef4444;"><i data-lucide="trash-2" style="width:14px;"></i></button>
             </div>
         </div>
     `).join('');
     lucide.createIcons();
 }
 
-function loadHistory(index) {
-    const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
-    const entry = history[index];
-    if (entry) {
-        state = entry.data;
-        // Sync inputs
-        document.getElementById('folio-input').value = state.folio;
-        document.getElementById('client-name').value = state.client.name;
-        document.getElementById('client-company').value = state.client.company;
-        document.getElementById('client-rfc').value = state.client.rfc;
-        document.getElementById('client-email').value = state.client.email;
-        
-        renderConditionsEditor();
-        renderItemsEditor();
-        updatePreview();
-    }
+function loadHistory(i) {
+    const h = JSON.parse(localStorage.getItem(COMPANIES[state.currentCompany].historyKey))[i];
+    state = h.data;
+    document.getElementById('folio-input').value = state.folio;
+    renderConditionsEditor(); renderItemsEditor(); updatePreview();
 }
 
-function copyHistory(index) {
-    const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
-    const entry = history[index];
-    if (entry) {
-        state = JSON.parse(JSON.stringify(entry.data));
-        
-        // Auto-increment the folio number if possible
-        let newFolio = state.folio;
-        const match = newFolio.match(/(\d+)$/);
-        if (match) {
-            const nextNum = parseInt(match[1]) + 1;
-            const padded = nextNum.toString().padStart(match[1].length, '0');
-            newFolio = newFolio.replace(/(\d+)$/, padded);
-        } else {
-            newFolio += " (COPIA)";
-        }
-        state.folio = newFolio;
-        
-        // Sync inputs
-        document.getElementById('folio-input').value = state.folio;
-        document.getElementById('client-name').value = state.client.name;
-        document.getElementById('client-company').value = state.client.company;
-        document.getElementById('client-rfc').value = state.client.rfc;
-        document.getElementById('client-email').value = state.client.email;
-        
-        renderConditionsEditor();
-        renderItemsEditor();
-        updatePreview();
-    }
+function copyHistory(i) {
+    loadHistory(i);
+    state.folio += " (COPIA)";
+    document.getElementById('folio-input').value = state.folio;
 }
 
-function deleteHistory(index) {
-    if(confirm("¿Seguro que deseas eliminar esta cotización del historial?")) {
-        const history = JSON.parse(localStorage.getItem('xilin_history') || '[]');
-        history.splice(index, 1);
-        localStorage.setItem('xilin_history', JSON.stringify(history));
+function deleteHistory(i) {
+    if (confirm("¿Eliminar?")) {
+        const key = COMPANIES[state.currentCompany].historyKey;
+        const h = JSON.parse(localStorage.getItem(key));
+        h.splice(i, 1);
+        localStorage.setItem(key, JSON.stringify(h));
         renderHistory();
     }
 }
 
-// Initial history load
-renderHistory();
-
-// --- Catalog Logic ---
-function openCatalog() {
-    document.getElementById('catalog-modal').style.display = 'flex';
-    renderCatalog();
-}
-
-function closeCatalog() {
-    document.getElementById('catalog-modal').style.display = 'none';
-}
-
+function openCatalog() { document.getElementById('catalog-modal').style.display = 'flex'; renderCatalog(); }
+function closeCatalog() { document.getElementById('catalog-modal').style.display = 'none'; }
 function renderCatalog(filter = '') {
-    const list = document.getElementById('catalog-list');
-    const filtered = CATALOG.filter(p => 
-        p.model.toLowerCase().includes(filter.toLowerCase()) || 
-        p.description.toLowerCase().includes(filter.toLowerCase())
-    );
-    
-    list.innerHTML = filtered.map((p, i) => `
+    const filtered = CATALOG.filter(p => p.model.toLowerCase().includes(filter.toLowerCase()) || p.description.toLowerCase().includes(filter.toLowerCase()));
+    document.getElementById('catalog-list').innerHTML = filtered.map(p => `
         <div class="catalog-item" onclick="selectProduct(${CATALOG.indexOf(p)})">
-            <strong>${p.model}</strong>
-            <p>${p.description}</p>
-            <div class="item-specs">${p.specs}</div>
+            <strong>${p.model}</strong><p>${p.description}</p><div class="item-specs">${p.specs}</div>
         </div>
     `).join('');
 }
-
-function filterCatalog(val) {
-    renderCatalog(val);
-}
-
-function selectProduct(index) {
-    const p = CATALOG[index];
-    const isGeneric = p.type === 'generic';
-    const batteryInfo = p.specs.split('|').find(s => s.toLowerCase().includes('batería'))?.split(':')[1]?.trim() || 'Ver ficha técnica';
-    const filteredHighlights = p.specs.split('|').filter(s => !s.toLowerCase().includes('batería')).map(s => s.trim()).join(' | ');
-    
+function filterCatalog(v) { renderCatalog(v); }
+function selectProduct(i) {
+    const p = CATALOG[i];
     state.items.push({
-        id: Date.now(),
-        type: isGeneric ? 'generic' : 'forklift',
-        modelTitle: p.model,
-        description: p.description,
-        highlights: filteredHighlights,
-        salePrice: p.price || 0,
-        rentPrice: 0,
-        quantity: 1,
-        discount: 0,
-        mastHeight: '4.5m',
-        forks: '42"',
-        tireType: 'Sólida',
-        battery: batteryInfo,
-        image: ""
+        id: Date.now(), type: p.type || 'forklift', modelTitle: p.model, description: p.description, highlights: p.specs.split('|').filter(s => !s.toLowerCase().includes('batería')).join(' | '),
+        salePrice: p.price || 0, rentPrice: 0, quantity: 1, discount: 0, mastHeight: '4.5m', forks: '42"', tireType: 'Sólida', battery: p.specs.split('|').find(s => s.toLowerCase().includes('batería'))?.split(':')[1]?.trim() || '-', image: ""
     });
-    renderItemsEditor();
-    updatePreview();
-    closeCatalog();
+    renderItemsEditor(); updatePreview(); closeCatalog();
 }
-
-// Close modal on escape
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeCatalog();
-});
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCatalog(); });

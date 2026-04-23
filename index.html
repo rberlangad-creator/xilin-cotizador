@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xilin Monterrey - Sistema de Cotización</title>
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     <!-- Catalog Data -->
-    <script src="products.js?v=4"></script>
+    <script src="products.js?v=5"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
+<body class="theme-xilin">
     <!-- Access Control Screen -->
     <div id="login-screen" class="login-overlay">
         <div class="login-card">
@@ -23,6 +23,26 @@
                 <div id="login-error" class="login-error">Credenciales incorrectas</div>
             </div>
             <p style="margin-top: 30px; font-size: 0.7rem; color: rgba(255,255,255,0.4);">Xilin Monterrey © 2026</p>
+        </div>
+    </div>
+
+    <!-- Company Selector Screen -->
+    <div id="company-selector" class="selector-overlay">
+        <div style="text-align: center; margin-bottom: 50px;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.5rem;">Bienvenido</h1>
+            <p style="color: var(--muted);">Seleccione la empresa para la que desea cotizar</p>
+        </div>
+        <div class="selector-grid">
+            <div class="company-card xilin" onclick="selectCompany('xilin')">
+                <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 3.5rem; line-height: 0.8; color: #000; letter-spacing: -2px; margin-bottom: 30px;">xilin</div>
+                <h2>Xilin Monterrey</h2>
+                <p>Equipos de manejo de carga</p>
+            </div>
+            <div class="company-card bss" onclick="selectCompany('bsservices')">
+                <img src="bsservices_logo.png" alt="BS Services" onerror="this.src='https://via.placeholder.com/200x80?text=BS+Services'">
+                <h2>BS Services</h2>
+                <p>Consultoría y Mantenimiento</p>
+            </div>
         </div>
     </div>
     <div id="app">
@@ -122,22 +142,16 @@
                     <i data-lucide="rotate-ccw"></i> Nueva
                 </button>
             </div>
+            <button class="btn switch-company-btn" onclick="showSelector()">
+                <i data-lucide="shuffle"></i> Cambiar Empresa
+            </button>
         </aside>
 
         <!-- Main Workspace: Paper Preview -->
         <main class="preview-container" id="printable-area">
             <header class="header-row">
-                <div class="company-branding">
-                    <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 3rem; line-height: 0.8; color: #000; letter-spacing: -2px;">
-                        xilin
-                    </div>
-                    <div class="company-info" style="margin-top: 15px;">
-                        <strong>Xilin Monterrey</strong><br>
-                        Melchor Ocampo 330, Centro,<br>
-                        64000 Monterrey, N.L.<br>
-                        www.xilinmonterrey.com<br>
-                        Tel. 81-3121-1403
-                    </div>
+                <div class="company-branding" id="company-header">
+                    <!-- Dynamic Header Content -->
                 </div>
 
                 <div class="quote-meta">
@@ -221,7 +235,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
     <script>
         lucide.createIcons();
     </script>
