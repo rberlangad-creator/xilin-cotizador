@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xilin Monterrey - Sistema de Cotización</title>
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=11">
     <!-- Catalog Data -->
-    <script src="products.js?v=10"></script>
+    <script src="products.js?v=11"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -43,6 +43,11 @@
                 <h2>BS Services</h2>
                 <p>Consultoría y Mantenimiento</p>
             </div>
+            <div class="company-card subisa" onclick="selectCompany('subisa')">
+                <img src="subisa_logo.png" alt="SUBISA" onerror="this.src='https://via.placeholder.com/200x80?text=SUBISA'">
+                <h2>SUBISA</h2>
+                <p>Subestaciones e Iluminación</p>
+            </div>
         </div>
     </div>
     <div id="app">
@@ -76,11 +81,21 @@
             </div>
 
             <div class="form-group">
-                <label>Cliente / Empresa / Contacto</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="margin: 0;">Cliente / Empresa / Contacto</label>
+                    <button class="btn" style="width: auto; padding: 4px 8px; font-size: 0.7rem; margin: 0; background: #e2e8f0; color: #444;" onclick="openCRM()">
+                        <i data-lucide="users" style="width: 14px; height: 14px;"></i> Directorio
+                    </button>
+                </div>
                 <input type="text" id="client-name" placeholder="Nombre completo">
                 <input type="text" id="client-company" placeholder="Empresa" style="margin-top: 10px;">
                 <input type="text" id="client-rfc" placeholder="RFC" style="margin-top: 10px;">
-                <input type="text" id="client-email" placeholder="Correo electrónico" style="margin-top: 10px;">
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <input type="text" id="client-email" placeholder="Correo electrónico" style="flex: 1;">
+                    <button class="btn btn-secondary" style="width: auto; padding: 12px; margin: 0;" onclick="saveClientToCRM()" title="Guardar Cliente">
+                        <i data-lucide="save"></i>
+                    </button>
+                </div>
             </div>
 
             <hr style="margin: 20px 0; opacity: 0.1;">
@@ -132,6 +147,9 @@
             </div>
             <button class="btn switch-company-btn" onclick="showSelector()">
                 <i data-lucide="shuffle"></i> Cambiar Empresa
+            </button>
+            <button class="btn switch-company-btn" id="btn-reportes" style="background: #e0e7ff; color: #4338ca; display: none;" onclick="openReports()">
+                <i data-lucide="bar-chart"></i> Reporte Gerencial
             </button>
             <button class="btn" style="background: #f8fafc; color: #64748b; font-size: 0.8rem; margin-top: 5px;" onclick="logout()">
                 <i data-lucide="log-out"></i> Cerrar Sesión
@@ -225,8 +243,37 @@
         </div>
     </div>
 
+    <!-- CRM Modal -->
+    <div id="crm-modal" class="modal-overlay no-print">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Directorio de Clientes</h3>
+                <button class="close-btn" onclick="closeCRM()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="crm-search" placeholder="Buscar cliente o empresa..." oninput="filterCRM(this.value)">
+                <div id="crm-list" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Clients will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Modal -->
+    <div id="report-modal" class="modal-overlay no-print">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Reporte Gerencial</h3>
+                <button class="close-btn" onclick="closeReports()">&times;</button>
+            </div>
+            <div class="modal-body" id="report-content">
+                <!-- Report will be injected here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
     <script>
         lucide.createIcons();
     </script>

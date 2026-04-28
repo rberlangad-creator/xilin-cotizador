@@ -17,6 +17,11 @@ body.theme-bsservices {
     --premium-glow: 0 0 20px rgba(30, 58, 138, 0.1);
 }
 
+body.theme-subisa {
+    --primary: #0284c7; /* Subisa Sky Blue */
+    --premium-glow: 0 0 20px rgba(2, 132, 199, 0.1);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -31,11 +36,6 @@ body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     overflow-x: hidden;
-}
-
-@page {
-    size: letter;
-    margin: 0;
 }
 
 /* --- Dashboard / Editor --- */
@@ -143,6 +143,7 @@ input:focus, textarea:focus {
     position: relative;
     overflow: hidden;
     border: 1px solid #eee;
+    box-sizing: border-box;
 }
 
 .header-row {
@@ -491,35 +492,76 @@ input:focus, textarea:focus {
     box-shadow: var(--shadow);
 }
 
+/* --- Status & Reports --- */
+.status-select {
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 0.7rem;
+    background: #fff;
+    cursor: pointer;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.report-table th, .report-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.report-table th {
+    background: #f8fafc;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.report-total-row {
+    font-weight: 800;
+    font-size: 1.1rem;
+    background: #f1f5f9;
+}
+
 /* --- Print Handling --- */
 @media print {
-    body {
+    body, html {
         background: #fff;
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw;
+        height: 100vh;
     }
     #app {
         margin: 0;
         padding: 0;
         display: block;
     }
-    .sidebar, .btn, .no-print {
+    .sidebar, .btn, .no-print, .modal-overlay {
         display: none !important;
     }
     @page {
         size: letter;
-        margin: 10mm;
+        margin: 0;
     }
     
     .preview-container {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 1cm !important;
         border: none !important;
         box-shadow: none !important;
-        min-height: auto !important;
+        min-height: 100% !important;
         transform: none !important;
+        box-sizing: border-box !important;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
     
     .items-table tr {
@@ -659,6 +701,7 @@ input:focus, textarea:focus {
 
 .company-card.xilin:hover { border-color: #f82b2b; }
 .company-card.bss:hover { border-color: #1e3a8a; }
+.company-card.subisa:hover { border-color: #0284c7; }
 
 .switch-company-btn {
     background: #f1f5f9;

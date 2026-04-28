@@ -46,6 +46,20 @@ const COMPANIES = {
             </div>
         `,
         email: "contacto@bsservices.com"
+    },
+    subisa: {
+        name: "SUBESTACIONES E ILUMINACION SA DE CV",
+        theme: "theme-subisa",
+        historyKey: "subisa_history",
+        headerHtml: `
+            <img src="subisa_logo.png" style="width: 220px; margin-bottom: 5px;" onerror="this.src='https://via.placeholder.com/220x60?text=SUBISA'">
+            <div class="company-info" style="font-size: 0.8rem; line-height: 1.3;">
+                <strong>SUBESTACIONES E ILUMINACION SA DE CV</strong><br>
+                GRAL. T URBINA 133, COL FRANCISCO VILLA<br>
+                SAN NICOLAS DE LOS GARZA, NUEVO LEON, CP 66430
+            </div>
+        `,
+        email: "contacto@subisa.com.mx"
     }
 };
 
@@ -74,10 +88,17 @@ window.onload = () => {
 
 function checkAccess() {
     const isLogged = sessionStorage.getItem('xilin_session');
+    const role = sessionStorage.getItem('user_role');
     const savedCompany = sessionStorage.getItem('current_company');
     
     if (isLogged) {
         document.getElementById('login-screen').style.display = 'none';
+        
+        const btnReportes = document.getElementById('btn-reportes');
+        if (btnReportes) {
+            btnReportes.style.display = (role === 'admin') ? 'flex' : 'none';
+        }
+
         if (savedCompany) {
             selectCompany(savedCompany);
         } else {
@@ -122,12 +143,19 @@ function updateLegalFooter() {
 }
 
 function handleLogin() {
-    const user = document.getElementById('login-user').value;
-    const pass = document.getElementById('login-pass').value;
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value.trim();
     const errorMsg = document.getElementById('login-error');
 
-    if (user === 'admin' && pass === 'xilin2026') {
+    if ((user === 'admin' && pass === 'xilin2026') || (user === 'ventas' && pass === 'xilin2026')) {
         sessionStorage.setItem('xilin_session', 'true');
+        sessionStorage.setItem('user_role', user === 'admin' ? 'admin' : 'ventas');
+        
+        const btnReportes = document.getElementById('btn-reportes');
+        if (btnReportes) {
+            btnReportes.style.display = (user === 'admin') ? 'flex' : 'none';
+        }
+
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('login-screen').style.display = 'none';
@@ -141,6 +169,7 @@ function handleLogin() {
 function logout() {
     sessionStorage.removeItem('xilin_session');
     sessionStorage.removeItem('current_company');
+    sessionStorage.removeItem('user_role');
     location.reload();
 }
 
@@ -304,11 +333,42 @@ function handleImageUpload(id, file) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        const item = state.items.find(i => i.id === id);
-        if (item) {
-            item.image = e.target.result;
-            updatePreview();
-        }
+        // Compress image using Canvas
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 250;
+            const MAX_HEIGHT = 250;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Compress to JPEG with 0.6 quality = tiny size
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+            const item = state.items.find(i => i.id === id);
+            if (item) {
+                item.image = dataUrl;
+                updatePreview();
+            }
+        };
+        img.src = e.target.result;
     };
     reader.readAsDataURL(file);
 }
@@ -398,9 +458,16 @@ function saveToHistory() {
     const config = COMPANIES[state.currentCompany];
     const history = JSON.parse(localStorage.getItem(config.historyKey) || '[]');
     const safeState = JSON.parse(JSON.stringify(state));
-    safeState.items.forEach(i => i.image = "");
-    history.unshift({ folio: state.folio, date: new Date().toLocaleDateString(), client: state.client.name, total: document.getElementById('total-val').innerText, data: safeState });
-    localStorage.setItem(config.historyKey, JSON.stringify(history.slice(0, 15)));
+    // Images are now compressed inline, we can save them so they persist
+    history.unshift({ 
+        folio: state.folio, 
+        date: new Date().toLocaleDateString(), 
+        client: state.client.name, 
+        total: document.getElementById('total-val').innerText, 
+        status: "Pendiente",
+        data: safeState 
+    });
+    localStorage.setItem(config.historyKey, JSON.stringify(history.slice(0, 30)));
     renderHistory();
 }
 
@@ -424,15 +491,29 @@ function renderHistory() {
         return;
     }
     container.innerHTML = history.map((h, i) => `
-        <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between;">
-            <div style="cursor: pointer;" onclick="loadHistory(${i})"><strong>${h.folio}</strong><br><span style="font-size: 0.7rem;">${h.client} | ${h.total}</span></div>
-            <div style="display: flex; gap: 5px;">
-                <button onclick="copyHistory(${i})" style="background:none;border:none;color:#3b82f6;"><i data-lucide="copy" style="width:14px;"></i></button>
-                <button onclick="deleteHistory(${i})" style="background:none;border:none;color:#ef4444;"><i data-lucide="trash-2" style="width:14px;"></i></button>
+        <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <div style="cursor: pointer;" onclick="loadHistory(${i})"><strong>${h.folio}</strong><br><span style="font-size: 0.7rem;">${h.client} | ${h.total}</span></div>
+                <div style="display: flex; gap: 5px; align-items: flex-start;">
+                    <button onclick="copyHistory(${i})" style="background:none;border:none;color:#3b82f6;"><i data-lucide="copy" style="width:14px;"></i></button>
+                    <button onclick="deleteHistory(${i})" style="background:none;border:none;color:#ef4444;"><i data-lucide="trash-2" style="width:14px;"></i></button>
+                </div>
             </div>
+            <select class="status-select" onchange="updateHistoryStatus(${i}, this.value)">
+                <option value="Pendiente" ${!h.status || h.status === 'Pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
+                <option value="Ganada" ${h.status === 'Ganada' ? 'selected' : ''}>✅ Ganada</option>
+                <option value="Perdida" ${h.status === 'Perdida' ? 'selected' : ''}>❌ Perdida</option>
+            </select>
         </div>
     `).join('');
     lucide.createIcons();
+}
+
+function updateHistoryStatus(i, status) {
+    const key = COMPANIES[state.currentCompany].historyKey;
+    const history = JSON.parse(localStorage.getItem(key));
+    history[i].status = status;
+    localStorage.setItem(key, JSON.stringify(history));
 }
 
 function loadHistory(i) {
@@ -477,4 +558,143 @@ function selectProduct(i) {
     });
     renderItemsEditor(); updatePreview(); closeCatalog();
 }
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCatalog(); });
+window.addEventListener('keydown', (e) => { 
+    if (e.key === 'Escape') {
+        closeCatalog();
+        closeCRM();
+        closeReports();
+    }
+});
+
+// --- CRM Functions ---
+function openCRM() {
+    renderCRM();
+    document.getElementById('crm-modal').style.display = 'flex';
+}
+
+function closeCRM() { document.getElementById('crm-modal').style.display = 'none'; }
+
+function saveClientToCRM() {
+    if (!state.client.name) {
+        alert("Escribe al menos el nombre del cliente.");
+        return;
+    }
+    const clients = JSON.parse(localStorage.getItem('xilin_clients') || '[]');
+    // Avoid exact duplicates
+    const exist = clients.findIndex(c => c.name === state.client.name && c.company === state.client.company);
+    if(exist !== -1) {
+        clients[exist] = { ...state.client };
+    } else {
+        clients.push({ ...state.client });
+    }
+    localStorage.setItem('xilin_clients', JSON.stringify(clients));
+    alert("Cliente guardado en el directorio.");
+}
+
+function renderCRM(filter = '') {
+    const clients = JSON.parse(localStorage.getItem('xilin_clients') || '[]');
+    const text = filter.toLowerCase();
+    const filtered = clients.filter(c => 
+        (c.name || '').toLowerCase().includes(text) || 
+        (c.company || '').toLowerCase().includes(text) ||
+        (c.rfc || '').toLowerCase().includes(text)
+    );
+
+    const container = document.getElementById('crm-list');
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted); font-size:0.9rem;">No hay clientes guardados.</p>';
+        return;
+    }
+
+    container.innerHTML = filtered.map((c, idx) => `
+        <div class="catalog-item" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>${c.name}</strong>
+                <p>${c.company || 'Sin Empresa'}</p>
+                <div class="item-specs">${c.rfc || 'Sin RFC'} | ${c.email || 'Sin correo'}</div>
+            </div>
+            <button class="btn btn-secondary" style="width: auto; padding: 8px 12px;" onclick='injectClient(${JSON.stringify(c).replace(/'/g, "&apos;")})'>
+                Utilizar
+            </button>
+        </div>
+    `).join('');
+}
+
+function filterCRM(val) { renderCRM(val); }
+
+function injectClient(cli) {
+    state.client.name = cli.name || '';
+    state.client.company = cli.company || '';
+    state.client.rfc = cli.rfc || '';
+    state.client.email = cli.email || '';
+    
+    document.getElementById('client-name').value = state.client.name;
+    document.getElementById('client-company').value = state.client.company;
+    document.getElementById('client-rfc').value = state.client.rfc;
+    document.getElementById('client-email').value = state.client.email;
+    
+    updatePreview();
+    closeCRM();
+}
+
+// --- Report Functions ---
+function openReports() {
+    if (sessionStorage.getItem('user_role') !== 'admin') {
+        alert("No tienes permisos para ver reportes.");
+        return;
+    }
+    document.getElementById('report-modal').style.display = 'flex';
+    renderReports();
+}
+
+function closeReports() { document.getElementById('report-modal').style.display = 'none'; }
+
+function renderReports() {
+    const key = COMPANIES[state.currentCompany].historyKey;
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    const container = document.getElementById('report-content');
+
+    let sumGanada = 0;
+    let sumPerdida = 0;
+    let sumPendiente = 0;
+
+    history.forEach(h => {
+        // Clean total currency format
+        const cleanTotal = parseFloat(h.total.replace(/[^0-9.-]+/g,"")) || 0;
+        const stat = h.status || 'Pendiente';
+        if (stat === 'Ganada') sumGanada += cleanTotal;
+        else if (stat === 'Perdida') sumPerdida += cleanTotal;
+        else sumPendiente += cleanTotal;
+    });
+
+    const format = (v) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: state.currency }).format(v);
+
+    container.innerHTML = `
+        <h4 style="margin-bottom: 10px; color: var(--accent);">Reporte General: ${COMPANIES[state.currentCompany].name}</h4>
+        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px;">
+            Este reporte agrupa los estatus de las cotizaciones que has guardado en el historial de esta empresa.
+        </p>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Estado</th>
+                    <th>Subtotal (Aprox. en ${state.currency})</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>✅ Cotizaciones Ganadas</td>
+                    <td style="color: #16a34a; font-weight: 600;">${format(sumGanada)}</td>
+                </tr>
+                <tr>
+                    <td>⏳ Cotizaciones Pendientes</td>
+                    <td style="color: #ca8a04; font-weight: 600;">${format(sumPendiente)}</td>
+                </tr>
+                <tr>
+                    <td>❌ Cotizaciones Perdidas</td>
+                    <td style="color: #dc2626; font-weight: 600;">${format(sumPerdida)}</td>
+                </tr>
+            </tbody>
+        </table>
+    `;
+}
