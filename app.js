@@ -46,21 +46,14 @@ const COMPANIES = {
             </div>
         `,
         email: "contacto@bsservices.com"
-    },
-    subisa: {
-        name: "SUBESTACIONES E ILUMINACION SA DE CV",
-        theme: "theme-subisa",
-        historyKey: "subisa_history",
-        headerHtml: `
-            <img src="subisa_logo.png" style="width: 220px; margin-bottom: 5px;" onerror="this.src='https://via.placeholder.com/220x60?text=SUBISA'">
-            <div class="company-info" style="font-size: 0.8rem; line-height: 1.3;">
-                <strong>SUBESTACIONES E ILUMINACION SA DE CV</strong><br>
-                GRAL. T URBINA 133, COL FRANCISCO VILLA<br>
-                SAN NICOLAS DE LOS GARZA, NUEVO LEON, CP 66430
-            </div>
-        `,
-        email: "contacto@subisa.com.mx"
     }
+};
+
+const ACCOUNTS = {
+    'admin': { pass: 'xilin2026', role: 'admin', name: 'Administrador' },
+    'user1': { pass: 'ventas123', role: 'user', name: 'Ventas 1' },
+    'user2': { pass: 'ventas456', role: 'user', name: 'Ventas 2' },
+    'user3': { pass: 'ventas789', role: 'user', name: 'Ventas 3' }
 };
 
 // --- State ---
@@ -98,8 +91,15 @@ function checkAccess() {
         if (btnReportes) {
             btnReportes.style.display = (role === 'admin') ? 'flex' : 'none';
         }
+        
+        const btnCambiarEmpresa = document.getElementById('btn-cambiar-empresa');
+        if (btnCambiarEmpresa) {
+            btnCambiarEmpresa.style.display = (role === 'admin') ? 'flex' : 'none';
+        }
 
-        if (savedCompany) {
+        if (role !== 'admin') {
+            selectCompany('xilin');
+        } else if (savedCompany) {
             selectCompany(savedCompany);
         } else {
             showSelector();
@@ -147,19 +147,31 @@ function handleLogin() {
     const pass = document.getElementById('login-pass').value.trim();
     const errorMsg = document.getElementById('login-error');
 
-    if ((user === 'admin' && pass === 'xilin2026') || (user === 'ventas' && pass === 'xilin2026')) {
+    const account = ACCOUNTS[user];
+
+    if (account && account.pass === pass) {
         sessionStorage.setItem('xilin_session', 'true');
-        sessionStorage.setItem('user_role', user === 'admin' ? 'admin' : 'ventas');
+        sessionStorage.setItem('user_role', account.role);
+        sessionStorage.setItem('user_name', account.name);
         
         const btnReportes = document.getElementById('btn-reportes');
         if (btnReportes) {
-            btnReportes.style.display = (user === 'admin') ? 'flex' : 'none';
+            btnReportes.style.display = (account.role === 'admin') ? 'flex' : 'none';
+        }
+        
+        const btnCambiarEmpresa = document.getElementById('btn-cambiar-empresa');
+        if (btnCambiarEmpresa) {
+            btnCambiarEmpresa.style.display = (account.role === 'admin') ? 'flex' : 'none';
         }
 
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('login-screen').style.display = 'none';
-            showSelector();
+            if (account.role === 'admin') {
+                showSelector();
+            } else {
+                selectCompany('xilin');
+            }
         }, 300);
     } else {
         errorMsg.style.display = 'block';
@@ -400,6 +412,11 @@ function updatePreview() {
     document.getElementById('folio-display').innerText = state.folio || 'COT #000000';
     const badges = document.getElementById('quote-badges');
     badges.innerHTML = `<span class="badge badge-mode">${state.mode.toUpperCase()}</span><span class="badge badge-curr">${state.currency}</span>`;
+    
+    const userRef = document.getElementById('user-reference');
+    if (userRef) {
+        userRef.innerText = 'Preparado por: ' + (sessionStorage.getItem('user_name') || 'Ventas');
+    }
     
     document.getElementById('bill-to-content').innerHTML = `
         <strong>${state.client.name || 'CLIENTE PENDIENTE'}</strong><br>

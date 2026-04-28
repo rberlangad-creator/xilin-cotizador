@@ -17,11 +17,6 @@ body.theme-bsservices {
     --premium-glow: 0 0 20px rgba(30, 58, 138, 0.1);
 }
 
-body.theme-subisa {
-    --primary: #0284c7; /* Subisa Sky Blue */
-    --premium-glow: 0 0 20px rgba(2, 132, 199, 0.1);
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -701,7 +696,6 @@ input:focus, textarea:focus {
 
 .company-card.xilin:hover { border-color: #f82b2b; }
 .company-card.bss:hover { border-color: #1e3a8a; }
-.company-card.subisa:hover { border-color: #0284c7; }
 
 .switch-company-btn {
     background: #f1f5f9;

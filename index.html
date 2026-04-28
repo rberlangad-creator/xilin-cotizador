@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xilin Monterrey - Sistema de Cotización</title>
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
     <!-- Catalog Data -->
-    <script src="products.js?v=11"></script>
+    <script src="products.js?v=12"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -42,11 +42,6 @@
                 <img src="bsservices_logo.png" alt="BS Services" onerror="this.src='https://via.placeholder.com/200x80?text=BS+Services'">
                 <h2>BS Services</h2>
                 <p>Consultoría y Mantenimiento</p>
-            </div>
-            <div class="company-card subisa" onclick="selectCompany('subisa')">
-                <img src="subisa_logo.png" alt="SUBISA" onerror="this.src='https://via.placeholder.com/200x80?text=SUBISA'">
-                <h2>SUBISA</h2>
-                <p>Subestaciones e Iluminación</p>
             </div>
         </div>
     </div>
@@ -145,7 +140,7 @@
                     <i data-lucide="rotate-ccw"></i> Nueva
                 </button>
             </div>
-            <button class="btn switch-company-btn" onclick="showSelector()">
+            <button class="btn switch-company-btn" id="btn-cambiar-empresa" onclick="showSelector()">
                 <i data-lucide="shuffle"></i> Cambiar Empresa
             </button>
             <button class="btn switch-company-btn" id="btn-reportes" style="background: #e0e7ff; color: #4338ca; display: none;" onclick="openReports()">
@@ -169,7 +164,8 @@
                     <div id="quote-badges" style="display: flex; gap: 8px; justify-content: flex-end;">
                         <!-- Dynamic badges will be injected here -->
                     </div>
-                    <div id="date-display" style="color: var(--muted); font-size: 0.9rem;">Fecha: 02, Abril de 2026</div>
+                    <div id="date-display" style="color: var(--muted); font-size: 0.9rem; margin-top: 8px;">Fecha: 02, Abril de 2026</div>
+                    <div id="user-reference" style="color: var(--muted); font-size: 0.75rem; margin-top: 2px;"></div>
                 </div>
             </header>
 
@@ -273,7 +269,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="app.js?v=11"></script>
+    <script src="app.js?v=12"></script>
     <script>
         lucide.createIcons();
     </script>
