@@ -482,17 +482,26 @@ function saveToHistory() {
         client: state.client.name, 
         total: document.getElementById('total-val').innerText, 
         status: "Pendiente",
+        author: sessionStorage.getItem('user_name') || 'Desconocido',
         data: safeState 
     });
     localStorage.setItem(config.historyKey, JSON.stringify(history.slice(0, 30)));
     renderHistory();
 }
 
+function generateNextFolio() {
+    const seqKey = state.currentCompany + '_folio_seq';
+    let seq = parseInt(localStorage.getItem(seqKey) || '71588');
+    seq++;
+    localStorage.setItem(seqKey, seq.toString());
+    return 'COT #' + seq.toString().padStart(7, '0');
+}
+
 function resetForm(ask = true) {
-    if (!ask || confirm("¿Borrar cotización actual?")) {
+    if (!ask || confirm("¿Borrar cotización actual y preparar nuevo folio?")) {
         state.items = [];
         state.client = { name: '', company: '', rfc: '', email: '' };
-        state.folio = 'COT #';
+        state.folio = generateNextFolio();
         state.conditions = [...CONDITIONS[state.mode]];
         document.getElementById('folio-input').value = state.folio;
         renderConditionsEditor(); renderItemsEditor(); updatePreview();
@@ -501,28 +510,40 @@ function resetForm(ask = true) {
 
 function renderHistory() {
     const key = COMPANIES[state.currentCompany].historyKey;
-    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    const allHistory = JSON.parse(localStorage.getItem(key) || '[]');
     const container = document.getElementById('folio-history');
-    if (history.length === 0) {
+    
+    const role = sessionStorage.getItem('user_role');
+    const myName = sessionStorage.getItem('user_name');
+    const myHistory = (role === 'admin') ? allHistory : allHistory.filter(h => h.author === myName);
+    
+    if (myHistory.length === 0) {
         container.innerHTML = '<p style="padding: 10px; font-style: italic;">Sin historial.</p>';
         return;
     }
-    container.innerHTML = history.map((h, i) => `
+    
+    container.innerHTML = myHistory.map(h => {
+        const globalIndex = allHistory.indexOf(h);
+        return `
         <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                <div style="cursor: pointer;" onclick="loadHistory(${i})"><strong>${h.folio}</strong><br><span style="font-size: 0.7rem;">${h.client} | ${h.total}</span></div>
+                <div style="cursor: pointer;" onclick="loadHistory(${globalIndex})">
+                    <strong>${h.folio}</strong><br>
+                    <span style="font-size: 0.7rem;">${h.client} | ${h.total} ${role === 'admin' ? `| ✍️ ${h.author}` : ''}</span>
+                </div>
                 <div style="display: flex; gap: 5px; align-items: flex-start;">
-                    <button onclick="copyHistory(${i})" style="background:none;border:none;color:#3b82f6;"><i data-lucide="copy" style="width:14px;"></i></button>
-                    <button onclick="deleteHistory(${i})" style="background:none;border:none;color:#ef4444;"><i data-lucide="trash-2" style="width:14px;"></i></button>
+                    <button onclick="copyHistory(${globalIndex})" style="background:none;border:none;color:#3b82f6;"><i data-lucide="copy" style="width:14px;"></i></button>
+                    ${role === 'admin' ? `<button onclick="deleteHistory(${globalIndex})" style="background:none;border:none;color:#ef4444;"><i data-lucide="trash-2" style="width:14px;"></i></button>` : ''}
                 </div>
             </div>
-            <select class="status-select" onchange="updateHistoryStatus(${i}, this.value)">
+            <select class="status-select" onchange="updateHistoryStatus(${globalIndex}, this.value)">
                 <option value="Pendiente" ${!h.status || h.status === 'Pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
                 <option value="Ganada" ${h.status === 'Ganada' ? 'selected' : ''}>✅ Ganada</option>
                 <option value="Perdida" ${h.status === 'Perdida' ? 'selected' : ''}>❌ Perdida</option>
             </select>
         </div>
-    `).join('');
+        `;
+    }).join('');
     lucide.createIcons();
 }
 
@@ -668,16 +689,16 @@ function closeReports() { document.getElementById('report-modal').style.display 
 
 function renderReports() {
     const key = COMPANIES[state.currentCompany].historyKey;
-    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    const allHistory = JSON.parse(localStorage.getItem(key) || '[]');
     const container = document.getElementById('report-content');
 
     let sumGanada = 0;
     let sumPerdida = 0;
     let sumPendiente = 0;
 
-    history.forEach(h => {
+    allHistory.forEach(h => {
         // Clean total currency format
-        const cleanTotal = parseFloat(h.total.replace(/[^0-9.-]+/g,"")) || 0;
+        const cleanTotal = parseFloat((h.total || "0").replace(/[^0-9.-]+/g,"")) || 0;
         const stat = h.status || 'Pendiente';
         if (stat === 'Ganada') sumGanada += cleanTotal;
         else if (stat === 'Perdida') sumPerdida += cleanTotal;
@@ -689,7 +710,7 @@ function renderReports() {
     container.innerHTML = `
         <h4 style="margin-bottom: 10px; color: var(--accent);">Reporte General: ${COMPANIES[state.currentCompany].name}</h4>
         <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px;">
-            Este reporte agrupa los estatus de las cotizaciones que has guardado en el historial de esta empresa.
+            Este reporte agrupa los estatus de TODAS las cotizaciones generadas por TODOS los ejecutivos de esta empresa.
         </p>
         <table class="report-table">
             <thead>
