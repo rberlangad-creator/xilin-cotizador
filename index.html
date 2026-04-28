@@ -26,25 +26,7 @@
         </div>
     </div>
 
-    <!-- Company Selector Screen -->
-    <div id="company-selector" class="selector-overlay">
-        <div style="text-align: center; margin-bottom: 50px;">
-            <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.5rem;">Bienvenido</h1>
-            <p style="color: var(--muted);">Seleccione la empresa para la que desea cotizar</p>
-        </div>
-        <div class="selector-grid">
-            <div class="company-card xilin" onclick="selectCompany('xilin')">
-                <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 3.5rem; line-height: 0.8; color: #000; letter-spacing: -2px; margin-bottom: 30px;">xilin</div>
-                <h2>Xilin Monterrey</h2>
-                <p>Equipos de manejo de carga</p>
-            </div>
-            <div class="company-card bss" onclick="selectCompany('bsservices')">
-                <img src="bsservices_logo.png" alt="BS Services" onerror="this.src='https://via.placeholder.com/200x80?text=BS+Services'">
-                <h2>BS Services</h2>
-                <p>Consultoría y Mantenimiento</p>
-            </div>
-        </div>
-    </div>
+
     <div id="app">
         <!-- Sidebar: Editor -->
         <aside class="sidebar no-print">
@@ -140,9 +122,7 @@
                     <i data-lucide="rotate-ccw"></i> Nueva
                 </button>
             </div>
-            <button class="btn switch-company-btn" id="btn-cambiar-empresa" onclick="showSelector()">
-                <i data-lucide="shuffle"></i> Cambiar Empresa
-            </button>
+
             <button class="btn switch-company-btn" id="btn-reportes" style="background: #e0e7ff; color: #4338ca; display: none;" onclick="openReports()">
                 <i data-lucide="bar-chart"></i> Reporte Gerencial
             </button>
@@ -155,7 +135,13 @@
         <main class="preview-container" id="printable-area">
             <header class="header-row">
                 <div class="company-branding" id="company-header">
-                    <!-- Dynamic Header Content -->
+                    <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 5.5rem; line-height: 0.7; color: #000; letter-spacing: -3px; margin-bottom: 10px;">xilin</div>
+                    <div class="company-info">
+                        <strong>Xilin Monterrey</strong><br>
+                        Gral. T Urbina 133, Col. Francisco Villa<br>
+                        San Nicolás de los Garza, N.L. CP 66430<br>
+                        www.xilinmonterrey.com | contacto@xilinmonterrey.com
+                    </div>
                 </div>
 
                 <div class="quote-meta">

@@ -19,55 +19,24 @@ const CONDITIONS = {
     ]
 };
 
-const COMPANIES = {
-    xilin: {
-        name: "Xilin Monterrey",
-        theme: "theme-xilin",
-        historyKey: "xilin_history",
-        headerHtml: `
-            <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 3rem; line-height: 0.8; color: #000; letter-spacing: -2px;">xilin</div>
-            <div class="company-info" style="margin-top: 15px;">
-                <strong>Xilin Monterrey</strong><br>
-                Melchor Ocampo 330, Centro, 64000 Monterrey, N.L.<br>
-                www.xilinmonterrey.com | Tel. 81-3121-1403
-            </div>
-        `
-    },
-    bsservices: {
-        name: "BS Services",
-        theme: "theme-bsservices",
-        historyKey: "bsservices_history",
-        headerHtml: `
-            <img src="bsservices_logo.png" style="width: 220px; margin-bottom: 5px;" onerror="this.src='https://via.placeholder.com/220x60?text=BS+Services'">
-            <div class="company-info">
-                <strong>BS Services - Consultoría Industrial</strong><br>
-                Monterrey, Nuevo León, México.<br>
-                www.bsservices.com.mx | contacto@bsservices.com
-            </div>
-        `,
-        email: "contacto@bsservices.com"
-    }
+const CONFIG = {
+    name: "Xilin Monterrey",
+    historyKey: "xilin_v2_history",
+    folioKey: "xilin_v2_folio_seq"
 };
 
 const ACCOUNTS = {
     'admin': { pass: 'xilin2026', role: 'admin', name: 'Administrador' },
-    'user1': { pass: 'ventas123', role: 'user', name: 'Ventas 1' },
-    'user2': { pass: 'ventas456', role: 'user', name: 'Ventas 2' },
-    'user3': { pass: 'ventas789', role: 'user', name: 'Ventas 3' }
+    'ventas1': { pass: 'ventas123', role: 'user', name: 'Ventas 1' },
+    'ventas2': { pass: 'ventas456', role: 'user', name: 'Ventas 2' }
 };
 
 // --- State ---
 let state = {
-    currentCompany: null,
     mode: 'venta',
     currency: 'USD',
     folio: 'COT #0071588',
-    client: {
-        name: 'JOEL ROBLES',
-        company: 'Xilin Monterrey',
-        rfc: 'XAX010101000',
-        email: 'test@example.com'
-    },
+    client: { name: 'JOEL ROBLES', company: 'Xilin Monterrey', rfc: 'XAX010101000', email: 'test@example.com' },
     items: [],
     conditions: [...CONDITIONS.venta]
 };
@@ -82,64 +51,24 @@ window.onload = () => {
 function checkAccess() {
     const isLogged = sessionStorage.getItem('xilin_session');
     const role = sessionStorage.getItem('user_role');
-    const savedCompany = sessionStorage.getItem('current_company');
     
     if (isLogged) {
         document.getElementById('login-screen').style.display = 'none';
         
         const btnReportes = document.getElementById('btn-reportes');
-        if (btnReportes) {
-            btnReportes.style.display = (role === 'admin') ? 'flex' : 'none';
-        }
+        if (btnReportes) btnReportes.style.display = (role === 'admin') ? 'flex' : 'none';
         
-        const btnCambiarEmpresa = document.getElementById('btn-cambiar-empresa');
-        if (btnCambiarEmpresa) {
-            btnCambiarEmpresa.style.display = (role === 'admin') ? 'flex' : 'none';
-        }
-
-        if (role !== 'admin') {
-            selectCompany('xilin');
-        } else if (savedCompany) {
-            selectCompany(savedCompany);
-        } else {
-            showSelector();
-        }
+        startApp();
     }
 }
 
-function showSelector() {
-    document.getElementById('company-selector').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-}
-
-function selectCompany(companyId) {
-    state.currentCompany = companyId;
-    sessionStorage.setItem('current_company', companyId);
-    
-    const config = COMPANIES[companyId];
-    document.body.className = config.theme;
-    document.getElementById('company-selector').style.display = 'none';
+function startApp() {
     document.getElementById('app').style.display = 'grid';
-    
-    document.getElementById('company-header').innerHTML = config.headerHtml;
-    
-    updateLegalFooter();
+    // Load fresh data
     resetForm(false);
     renderHistory();
     updatePreview();
     lucide.createIcons();
-}
-
-function updateLegalFooter() {
-    const config = COMPANIES[state.currentCompany];
-    const footer = document.getElementById('legal-footer-content');
-    if (!footer) return;
-    
-    const names = footer.querySelectorAll('.comp-name');
-    const emails = footer.querySelectorAll('.comp-email');
-    
-    names.forEach(n => n.innerText = config.name);
-    emails.forEach(e => e.innerText = config.email || 'contacto@xilinmonterrey.com');
 }
 
 function handleLogin() {
@@ -155,23 +84,12 @@ function handleLogin() {
         sessionStorage.setItem('user_name', account.name);
         
         const btnReportes = document.getElementById('btn-reportes');
-        if (btnReportes) {
-            btnReportes.style.display = (account.role === 'admin') ? 'flex' : 'none';
-        }
-        
-        const btnCambiarEmpresa = document.getElementById('btn-cambiar-empresa');
-        if (btnCambiarEmpresa) {
-            btnCambiarEmpresa.style.display = (account.role === 'admin') ? 'flex' : 'none';
-        }
+        if (btnReportes) btnReportes.style.display = (account.role === 'admin') ? 'flex' : 'none';
 
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('login-screen').style.display = 'none';
-            if (account.role === 'admin') {
-                showSelector();
-            } else {
-                selectCompany('xilin');
-            }
+            startApp();
         }, 300);
     } else {
         errorMsg.style.display = 'block';
@@ -180,8 +98,8 @@ function handleLogin() {
 
 function logout() {
     sessionStorage.removeItem('xilin_session');
-    sessionStorage.removeItem('current_company');
     sessionStorage.removeItem('user_role');
+    sessionStorage.removeItem('user_name');
     location.reload();
 }
 
@@ -472,8 +390,7 @@ function updatePreview() {
 }
 
 function saveToHistory() {
-    const config = COMPANIES[state.currentCompany];
-    const history = JSON.parse(localStorage.getItem(config.historyKey) || '[]');
+    const history = JSON.parse(localStorage.getItem(CONFIG.historyKey) || '[]');
     const safeState = JSON.parse(JSON.stringify(state));
     // Images are now compressed inline, we can save them so they persist
     history.unshift({ 
@@ -485,12 +402,12 @@ function saveToHistory() {
         author: sessionStorage.getItem('user_name') || 'Desconocido',
         data: safeState 
     });
-    localStorage.setItem(config.historyKey, JSON.stringify(history.slice(0, 30)));
+    localStorage.setItem(CONFIG.historyKey, JSON.stringify(history.slice(0, 30)));
     renderHistory();
 }
 
 function generateNextFolio() {
-    const seqKey = state.currentCompany + '_folio_seq';
+    const seqKey = CONFIG.folioKey;
     let seq = parseInt(localStorage.getItem(seqKey) || '71588');
     seq++;
     localStorage.setItem(seqKey, seq.toString());
@@ -509,7 +426,7 @@ function resetForm(ask = true) {
 }
 
 function renderHistory() {
-    const key = COMPANIES[state.currentCompany].historyKey;
+    const key = CONFIG.historyKey;
     const allHistory = JSON.parse(localStorage.getItem(key) || '[]');
     const container = document.getElementById('folio-history');
     
@@ -548,14 +465,14 @@ function renderHistory() {
 }
 
 function updateHistoryStatus(i, status) {
-    const key = COMPANIES[state.currentCompany].historyKey;
+    const key = CONFIG.historyKey;
     const history = JSON.parse(localStorage.getItem(key));
     history[i].status = status;
     localStorage.setItem(key, JSON.stringify(history));
 }
 
 function loadHistory(i) {
-    const h = JSON.parse(localStorage.getItem(COMPANIES[state.currentCompany].historyKey))[i];
+    const h = JSON.parse(localStorage.getItem(CONFIG.historyKey))[i];
     state = h.data;
     document.getElementById('folio-input').value = state.folio;
     renderConditionsEditor(); renderItemsEditor(); updatePreview();
@@ -569,7 +486,7 @@ function copyHistory(i) {
 
 function deleteHistory(i) {
     if (confirm("¿Eliminar?")) {
-        const key = COMPANIES[state.currentCompany].historyKey;
+        const key = CONFIG.historyKey;
         const h = JSON.parse(localStorage.getItem(key));
         h.splice(i, 1);
         localStorage.setItem(key, JSON.stringify(h));
@@ -688,7 +605,7 @@ function openReports() {
 function closeReports() { document.getElementById('report-modal').style.display = 'none'; }
 
 function renderReports() {
-    const key = COMPANIES[state.currentCompany].historyKey;
+    const key = CONFIG.historyKey;
     const allHistory = JSON.parse(localStorage.getItem(key) || '[]');
     const container = document.getElementById('report-content');
 
@@ -708,9 +625,9 @@ function renderReports() {
     const format = (v) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: state.currency }).format(v);
 
     container.innerHTML = `
-        <h4 style="margin-bottom: 10px; color: var(--accent);">Reporte General: ${COMPANIES[state.currentCompany].name}</h4>
+        <h4 style="margin-bottom: 10px; color: var(--accent);">Reporte General: ${CONFIG.name}</h4>
         <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 20px;">
-            Este reporte agrupa los estatus de TODAS las cotizaciones generadas por TODOS los ejecutivos de esta empresa.
+            Este reporte agrupa los estatus de TODAS las cotizaciones generadas por TODOS los ejecutivos de la plataforma.
         </p>
         <table class="report-table">
             <thead>
