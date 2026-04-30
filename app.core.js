@@ -298,8 +298,8 @@ function handleImageUpload(id, file) {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Compress to JPEG with 0.6 quality = tiny size
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+            // Compress to WEBP with 0.7 quality to preserve transparency while keeping size small
+            const dataUrl = canvas.toDataURL('image/webp', 0.7);
 
             const item = state.items.find(i => i.id === id);
             if (item) {
