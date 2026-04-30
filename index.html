@@ -122,6 +122,16 @@
                     <i data-lucide="rotate-ccw"></i> Nueva
                 </button>
             </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn" style="flex: 1; background: #f8fafc; color: #475569; font-size: 0.8rem;" onclick="exportData()">
+                    <i data-lucide="download" style="width: 16px;"></i> Respaldar
+                </button>
+                <button class="btn" style="flex: 1; background: #f8fafc; color: #475569; font-size: 0.8rem;" onclick="document.getElementById('import-file').click()">
+                    <i data-lucide="upload" style="width: 16px;"></i> Restaurar
+                    <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(event)">
+                </button>
+            </div>
 
             <button class="btn switch-company-btn" id="btn-reportes" style="background: #e0e7ff; color: #4338ca; display: none;" onclick="openReports()">
                 <i data-lucide="bar-chart"></i> Reporte Gerencial

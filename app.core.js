@@ -503,6 +503,40 @@ function deleteHistory(i) {
     }
 }
 
+function exportData() {
+    const data = {
+        history: localStorage.getItem(CONFIG.historyKey) || '[]',
+        clients: localStorage.getItem('xilin_clients') || '[]',
+        folioSeq: localStorage.getItem(CONFIG.folioKey) || '71588'
+    };
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `xilin_respaldo_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.history) localStorage.setItem(CONFIG.historyKey, data.history);
+            if (data.clients) localStorage.setItem('xilin_clients', data.clients);
+            if (data.folioSeq) localStorage.setItem(CONFIG.folioKey, data.folioSeq);
+            alert("¡Datos restaurados con éxito!");
+            location.reload();
+        } catch (err) {
+            alert("Error al leer el archivo de respaldo.");
+        }
+    };
+    reader.readAsText(file);
+}
+
 function openCatalog() { document.getElementById('catalog-modal').style.display = 'flex'; renderCatalog(); }
 function closeCatalog() { document.getElementById('catalog-modal').style.display = 'none'; }
 function renderCatalog(filter = '') {
