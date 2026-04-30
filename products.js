@@ -211,6 +211,38 @@ const CATALOG = [
         price: 0
     },
 
+    // --- Serie QDD (Tractores de Arrastre) ---
+    {
+        model: "QDD20",
+        description: "Tractor de arrastre eléctrico operador sentado. Capacidad de remolque de 2 toneladas. Ideal para transporte logístico interno continuo y de larga distancia.",
+        specs: "Marca: Xilin | Capacidad: 2,000kg | Batería: 48V/240Ah (Opción Litio 200Ah) | Tipo: Tractor de Arrastre",
+        price: 0
+    },
+    {
+        model: "QDD30",
+        description: "Tractor de arrastre eléctrico operador sentado. Capacidad de remolque de 3 toneladas para transporte eficiente en almacenes y plantas.",
+        specs: "Marca: Xilin | Capacidad: 3,000kg | Batería: 48V/270Ah (Opción Litio 250Ah) | Tipo: Tractor de Arrastre",
+        price: 0
+    },
+    {
+        model: "QDD50",
+        description: "Tractor de arrastre eléctrico operador sentado de alta capacidad. Capacidad de remolque de 5 toneladas.",
+        specs: "Marca: Xilin | Capacidad: 5,000kg | Batería: 48V/360Ah (Opción Litio 300Ah) | Tipo: Tractor de Arrastre",
+        price: 0
+    },
+    {
+        model: "QDD60",
+        description: "Tractor de arrastre eléctrico operador sentado para carga pesada. Capacidad de remolque de 6 toneladas.",
+        specs: "Marca: Xilin | Capacidad: 6,000kg | Batería: 48V/400Ah (Opción Litio 350Ah) | Tipo: Tractor de Arrastre",
+        price: 0
+    },
+    {
+        model: "QDD100",
+        description: "Tractor de arrastre eléctrico operador sentado gran capacidad. Capacidad de remolque de 10 toneladas, máxima potencia para industria pesada.",
+        specs: "Marca: Xilin | Capacidad: 10,000kg | Batería: 48V/540Ah | Tipo: Tractor de Arrastre",
+        price: 0
+    },
+
     // --- Servicios y Refacciones ---
     {
         model: "ARTÍCULO GENÉRICO / VARIOS",
