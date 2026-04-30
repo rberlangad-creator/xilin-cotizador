@@ -165,6 +165,14 @@ const CATALOG = [
         price: 0
     },
 
+    // --- Serie Diésel LTMG ---
+    {
+        model: "FD70T-H",
+        description: "Montacargas Diésel LTMG de 7 toneladas. Múltiples opciones de motores confiables probados en condiciones de trabajo difíciles con bajo consumo de combustible, menor ruido y vibración. Alta eficiencia en ejes y excelente sistema de frenado para máxima seguridad. [Ventajas y Destacados]: 1. Chasis de suspensión de diseño de una pieza. 2. Nuevo tanque de agua y sistema de refrigeración. 3. Mayor espacio de operación con volante, palanca y pedales optimizados. 4. Sistema hidráulico de alta eficiencia. 5. Mástil de visión amplia mejorada para mayor eficiencia y seguridad.",
+        specs: "Marca: LTMG | Capacidad: 7,000kg | Motor: CHAOCHAI 6102BG6 | Mástil: 3,000mm",
+        price: 0
+    },
+
     // --- Equipos Especializados ---
     {
         model: "CQDH15C (Single Reach)",
