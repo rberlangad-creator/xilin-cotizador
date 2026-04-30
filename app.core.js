@@ -63,12 +63,21 @@ function checkAccess() {
 }
 
 function startApp() {
-    document.getElementById('app').style.display = 'grid';
-    // Load fresh data
-    resetForm(false);
-    renderHistory();
-    updatePreview();
-    lucide.createIcons();
+    try {
+        document.getElementById('app').style.display = 'grid';
+        // Load fresh data
+        resetForm(false);
+        renderHistory();
+        updatePreview();
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        } else {
+            console.warn('Lucide not loaded yet');
+        }
+    } catch(err) {
+        alert("Error crítico al iniciar: " + err.message + "\n\nPor favor, contacta a soporte o intenta refrescar.");
+        console.error(err);
+    }
 }
 
 function handleLogin() {
