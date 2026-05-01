@@ -175,6 +175,12 @@ const CATALOG = [
 
     // --- Equipos Especializados ---
     {
+        model: "CQDH15A-III (Single Scissor)",
+        description: "Apilador eléctrico Reach Stacker con pantógrafo (Single Scissor). Diseño muy compacto con plataforma para operador a bordo (Standing). Equipado con motor AC avanzado libre de mantenimiento y manillar alemán Frei para control preciso (Multi-Valve Control). [Ventajas]: 1. Desaceleración automática al elevar a más de 1.8m. 2. Válvula a prueba de explosiones en el cilindro. 3. Protección de bajo voltaje. 4. Opción de dirección electrónica EPS.",
+        specs: "Marca: Xilin | Capacidad: 1,500kg | Batería: Plomo-Ácido 24V/320Ah (Opción Litio 230Ah) | Tipo: Reach Stacker",
+        price: 0
+    },
+    {
         model: "CQDH15C (Single Reach)",
         description: "Montacargas Electric Fork Reach Truck con pantógrafo (single scissor). Ideal para maniobras en racks de profundidad sencilla. Control AC y dirección electrónica EPS.",
         specs: "Marca: Xilin | Capacidad: 1,500kg | Batería: 24V/420Ah | Tipo: Reach Pantógrafo Simple",
