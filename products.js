@@ -173,6 +173,14 @@ const CATALOG = [
         price: 0
     },
 
+    // --- Serie Combustión Dual / Gasolina ---
+    {
+        model: "FG70L",
+        description: "Montacargas Dual (Gasolina/Gas LP) VIFT de 7 toneladas. Transmisión automática y motor PSI Dual Fuel. Compartimento de motor insonorizado y sistema de escape en posición media. Equipado con asiento tipo Toyota con cinturón de seguridad, volante ajustable, luces de trabajo LED delanteras, luz de advertencia, zumbador, luz roja trasera y panel LCD. Incluye mástil dúplex de visión amplia con función de inclinación y caja de herramientas.",
+        specs: "Marca: VIFT | Capacidad: 7,000kg | Motor: PSI Dual Fuel | Mástil: Dúplex 3,000mm | Llantas: Neumáticas | Horquillas: 1,500mm",
+        price: 0
+    },
+
     // --- Equipos Especializados ---
     {
         model: "CQDH15A-III (Single Scissor)",
