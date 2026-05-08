@@ -38,7 +38,9 @@ let state = {
     folio: 'COT #0071588',
     client: { name: 'JOEL ROBLES', company: 'Xilin Monterrey', rfc: 'XAX010101000', email: 'test@example.com' },
     items: [],
-    conditions: [...CONDITIONS.venta]
+    conditions: [...CONDITIONS.venta],
+    globalDiscount: 0,
+    discountApproved: false
 };
 
 // --- Initial Render ---
@@ -165,7 +167,96 @@ function initEventListeners() {
     bindInput('client-rfc', 'rfc');
     bindInput('client-email', 'email');
 
-    document.getElementById('print-btn').onclick = () => window.print();
+    document.getElementById('print-btn').onclick = () => {
+        if (state.globalDiscount > 0 && !state.discountApproved) {
+            const pass = prompt(`⚠️ Este descuento del ${state.globalDiscount}% no ha sido aprobado por el administrador.\n\nIngrese la contraseña de admin para aprobar e imprimir:`);
+            if (pass === null) return;
+            if (pass !== ACCOUNTS['admin'].pass) {
+                alert('❌ Contraseña incorrecta. No se puede imprimir sin aprobación del administrador.');
+                return;
+            }
+            state.discountApproved = true;
+            updateDiscountUI();
+        }
+        window.print();
+    };
+}
+
+function handleGlobalDiscountChange(select) {
+    const value = parseFloat(select.value) || 0;
+    const role = sessionStorage.getItem('user_role');
+
+    if (value > 0) {
+        if (role === 'admin') {
+            // Admin must confirm with password to apply & auto-approve
+            const pass = prompt(`Ingrese la contraseña de administrador para aplicar y aprobar un descuento del ${value}%:`);
+            if (pass !== ACCOUNTS['admin'].pass) {
+                alert('❌ Contraseña incorrecta. No se aplicó el descuento.');
+                select.value = (state.globalDiscount || 0).toString();
+                return;
+            }
+            state.discountApproved = true;
+        } else {
+            // Non-admin: discount is set but pending approval
+            state.discountApproved = false;
+        }
+    } else {
+        state.discountApproved = false;
+    }
+
+    state.globalDiscount = value;
+    updateDiscountUI();
+    updatePreview();
+}
+
+function approveDiscount() {
+    if (state.globalDiscount <= 0) return;
+    const pass = prompt(`Ingrese la contraseña de administrador para aprobar el descuento del ${state.globalDiscount}%:`);
+    if (pass !== ACCOUNTS['admin'].pass) {
+        alert('❌ Contraseña incorrecta.');
+        return;
+    }
+    state.discountApproved = true;
+    updateDiscountUI();
+    alert(`✅ Descuento del ${state.globalDiscount}% aprobado. Ya puede imprimir la cotización.`);
+}
+
+function updateDiscountUI() {
+    const statusEl = document.getElementById('discount-approval-status');
+    const approveBtn = document.getElementById('btn-approve-discount');
+    const printBtn = document.getElementById('print-btn');
+
+    if (state.globalDiscount > 0) {
+        statusEl.style.display = 'block';
+        if (state.discountApproved) {
+            statusEl.style.background = '#dcfce7';
+            statusEl.style.color = '#16a34a';
+            statusEl.innerHTML = '✅ Descuento ' + state.globalDiscount + '% — Aprobado por Admin';
+            if (approveBtn) approveBtn.style.display = 'none';
+            if (printBtn) {
+                printBtn.style.background = '';
+                printBtn.title = '';
+            }
+        } else {
+            statusEl.style.background = '#fef9c3';
+            statusEl.style.color = '#92400e';
+            statusEl.innerHTML = '⏳ Descuento ' + state.globalDiscount + '% — Pendiente de aprobación';
+            const role = sessionStorage.getItem('user_role');
+            if (approveBtn) approveBtn.style.display = (role === 'admin') ? 'block' : 'none';
+            if (printBtn) {
+                printBtn.style.background = '#94a3b8';
+                printBtn.title = 'Requiere aprobación del administrador para imprimir';
+            }
+        }
+    } else {
+        statusEl.style.display = 'none';
+        if (approveBtn) approveBtn.style.display = 'none';
+        if (printBtn) {
+            printBtn.style.background = '';
+            printBtn.title = '';
+        }
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function addNewItem() {
@@ -386,10 +477,23 @@ function updatePreview() {
         table.appendChild(tbody);
     });
 
-    const tax = subtotal * 0.16;
+    const discountAmount = subtotal * ((state.globalDiscount || 0) / 100);
+    const subtotalWithDiscount = subtotal - discountAmount;
+    const tax = subtotalWithDiscount * 0.16;
+
     document.getElementById('subtotal-val').innerText = formatCurrency(subtotal);
+    
+    const discountRow = document.getElementById('global-discount-row');
+    if (state.globalDiscount > 0) {
+        if (discountRow) discountRow.style.display = 'flex';
+        document.getElementById('discount-percent-label').innerText = state.globalDiscount;
+        document.getElementById('global-discount-val').innerText = "-" + formatCurrency(discountAmount);
+    } else {
+        if (discountRow) discountRow.style.display = 'none';
+    }
+
     document.getElementById('tax-val').innerText = formatCurrency(tax);
-    document.getElementById('total-val').innerText = formatCurrency(subtotal + tax);
+    document.getElementById('total-val').innerText = formatCurrency(subtotalWithDiscount + tax);
 
     const condSection = document.getElementById('conditions-section');
     condSection.innerHTML = `
@@ -429,7 +533,12 @@ function resetForm(ask = true) {
         state.client = { name: '', company: '', rfc: '', email: '' };
         state.folio = generateNextFolio();
         state.conditions = [...CONDITIONS[state.mode]];
+        state.globalDiscount = 0;
+        state.discountApproved = false;
         document.getElementById('folio-input').value = state.folio;
+        const discountSelect = document.getElementById('global-discount-select');
+        if (discountSelect) discountSelect.value = "0";
+        updateDiscountUI();
         renderConditionsEditor(); renderItemsEditor(); updatePreview();
     }
 }
@@ -483,7 +592,12 @@ function updateHistoryStatus(i, status) {
 function loadHistory(i) {
     const h = JSON.parse(localStorage.getItem(CONFIG.historyKey))[i];
     state = h.data;
+    if (state.globalDiscount === undefined) state.globalDiscount = 0;
+    if (state.discountApproved === undefined) state.discountApproved = false;
     document.getElementById('folio-input').value = state.folio;
+    const discountSelect = document.getElementById('global-discount-select');
+    if (discountSelect) discountSelect.value = state.globalDiscount.toString();
+    updateDiscountUI();
     renderConditionsEditor(); renderItemsEditor(); updatePreview();
 }
 

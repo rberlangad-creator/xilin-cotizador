@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xilin Monterrey - Sistema de Cotización</title>
-    <link rel="stylesheet" href="style.css?v=21">
+    <link rel="stylesheet" href="style.css?v=22">
     <!-- Catalog Data -->
-    <script src="products.js?v=21"></script>
+    <script src="products.js?v=22"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest" defer></script>
 </head>
@@ -88,6 +88,25 @@
                 </button>
                 <button class="btn" onclick="openCatalog()" style="flex: 1; background: #3b82f6; color: #fff;">
                     <i data-lucide="search"></i> Catálogo
+                </button>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                <label style="color: var(--primary); display: flex; align-items: center; gap: 6px;">
+                    <i data-lucide="tag" style="width: 14px; height: 14px;"></i>
+                    Descuento Global
+                </label>
+                <select id="global-discount-select" onchange="handleGlobalDiscountChange(this)" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <option value="0">Sin descuento</option>
+                    <option value="2.5">2.5% de descuento</option>
+                    <option value="5">5% de descuento</option>
+                    <option value="7.5">7.5% de descuento</option>
+                    <option value="10">10% de descuento</option>
+                </select>
+                <div id="discount-approval-status" style="display: none; margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;"></div>
+                <button id="btn-approve-discount" onclick="approveDiscount()" style="display: none; margin-top: 8px; width: 100%; padding: 8px; border: none; border-radius: 6px; background: #f59e0b; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+                    <i data-lucide="shield-check" style="width: 14px; height: 14px; vertical-align: middle;"></i>
+                    Aprobar Descuento (Admin)
                 </button>
             </div>
 
@@ -189,6 +208,10 @@
                         <span>Sub-total</span>
                         <span id="subtotal-val">$ 0.00</span>
                     </div>
+                    <div class="total-row" id="global-discount-row" style="display: none; color: #ef4444;">
+                        <span>Descuento (<span id="discount-percent-label">0</span>%)</span>
+                        <span id="global-discount-val">-$ 0.00</span>
+                    </div>
                     <div class="total-row">
                         <span>Impuestos (16%)</span>
                         <span id="tax-val">$ 0.00</span>
@@ -265,7 +288,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="app.core.js?v=21"></script>
+    <script src="app.core.js?v=22"></script>
     <script>
         if (typeof lucide !== 'undefined') lucide.createIcons();
     </script>
